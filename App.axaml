@@ -24,6 +24,9 @@
     <Application.Styles>
         <suki:SukiTheme ThemeColor="Blue" />
 
+        <!-- IconPacks 样式 -->
+        <StyleInclude Source="avares://IconPacks.Avalonia/Icons.axaml" />
+
         <!-- LiveMarkdown 样式 -->
         <StyleInclude Source="avares://LiveMarkdown.Avalonia/Styles.axaml"/>
     </Application.Styles>

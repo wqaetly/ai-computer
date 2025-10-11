@@ -8,7 +8,8 @@ using AiComputer.Services;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Material.Icons;
+using IconPacks.Avalonia;
+using IconPacks.Avalonia.Material;
 
 namespace AiComputer.ViewModels;
 
@@ -65,7 +66,7 @@ public partial class AiChatViewModel : PageBase
     /// <summary>
     /// 构造函数
     /// </summary>
-    public AiChatViewModel() : base("AI 聊天", MaterialIconKind.Chat, 0)
+    public AiChatViewModel() : base("AI 聊天", PackIconMaterialKind.Chat, 0)
     {
         // 使用提供的 API Key
         _deepSeekService = new DeepSeekService("sk-e8ec7e0c860d4b7d98ffc4212ab2c138");
@@ -149,7 +150,7 @@ public partial class AiChatViewModel : PageBase
     /// <summary>
     /// 发送或停止命令（统一按钮）
     /// </summary>
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true)]
     private async Task SendOrStopAsync()
     {
         if (IsSending)
@@ -253,32 +254,22 @@ public partial class AiChatViewModel : PageBase
                             assistantMsg.Content += contentChunk; // 保持字符串同步用于状态判断
                         });
                     },
-                    async (toolName, query) =>
+                    async (query) =>
                     {
-                        // 工具调用回调 - 执行联网搜索
-                        if (toolName == "web_search")
+                        // 搜索回调 - 执行联网搜索
+                        // 更新状态为搜索中
+                        await Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            // 更新状态为搜索中
-                            await Dispatcher.UIThread.InvokeAsync(() =>
-                            {
-                                assistantMsg.Status = AiMessageStatus.Searching;
-                            });
+                            assistantMsg.Status = AiMessageStatus.Searching;
+                        });
 
-                            Console.WriteLine($"🔍 AI 请求搜索: {query}");
+                        // 执行搜索
+                        var searchResults = await _searchService.SearchAsync(query, 5, _cancellationTokenSource!.Token);
 
-                            // 执行搜索
-                            var searchResults = await _searchService.SearchAsync(query, 5, _cancellationTokenSource!.Token);
-
-                            // 格式化搜索结果
-                            var formattedResults = SearchService.FormatSearchResults(searchResults);
-
-                            Console.WriteLine($"✓ 搜索完成，找到 {searchResults.Count} 条结果");
-
-                            return formattedResults;
-                        }
-
-                        return "未知的工具调用";
+                        // 格式化搜索结果并返回
+                        return SearchService.FormatSearchResults(searchResults);
                     },
+                    isSearchFollowUp: false, // 首次请求
                     _cancellationTokenSource.Token
                 );
             }, _cancellationTokenSource.Token).ConfigureAwait(false);

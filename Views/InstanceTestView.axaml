@@ -5,7 +5,7 @@
              xmlns:vm="using:AiComputer.ViewModels"
              xmlns:services="using:AiComputer.Services"
              xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
-             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="AiComputer.Views.InstanceTestView"
              x:DataType="vm:InstanceTestViewModel">
@@ -89,20 +89,30 @@
 
                 <!-- 按钮组 -->
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Button Content="▶️ 开始测试"
-                            Command="{Binding StartTestCommand}"
-                            IsEnabled="{Binding !IsTesting}"
-                            Classes="Accent" />
+                    <Button Command="{Binding StartTestCommand}"
+                            Classes="Accent">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <iconPacks:PackIconMaterial Kind="{Binding TestButtonIcon}"
+                                                        Width="18"
+                                                        Height="18"
+                                                        VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding TestButtonText}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
 
-                    <Button Content="⏸️ 停止测试"
-                            Command="{Binding StopTestCommand}"
-                            IsEnabled="{Binding IsTesting}"
-                            Classes="Flat Accent" />
-
-                    <Button Content="🔄 重新加载"
-                            Command="{Binding ReloadInstancesCommand}"
+                    <Button Command="{Binding ReloadInstancesCommand}"
                             IsEnabled="{Binding !IsTesting}"
-                            Classes="Basic" />
+                            Classes="Accent">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <iconPacks:PackIconMaterial Kind="Refresh"
+                                                        Width="18"
+                                                        Height="18"
+                                                        VerticalAlignment="Center" />
+                            <TextBlock Text="重新加载"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </StackPanel>
         </suki:GlassCard>
@@ -115,33 +125,33 @@
                         <suki:GlassCard Margin="0,0,0,10" Padding="15">
                             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                                 <!-- 状态图标 -->
-                                <avalonia:MaterialIcon Grid.Column="0"
-                                                       Width="24"
-                                                       Height="24"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,12,0">
-                                    <avalonia:MaterialIcon.Styles>
-                                        <Style Selector="avalonia|MaterialIcon">
+                                <iconPacks:PackIconMaterial Grid.Column="0"
+                                                            Width="24"
+                                                            Height="24"
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,12,0">
+                                    <iconPacks:PackIconMaterial.Styles>
+                                        <Style Selector="iconPacks|PackIconMaterial">
                                             <Setter Property="Kind" Value="HelpCircle" />
                                             <Setter Property="Foreground" Value="{DynamicResource SukiLowText}" />
                                         </Style>
-                                        <Style Selector="avalonia|MaterialIcon[Tag=Available]">
+                                        <Style Selector="iconPacks|PackIconMaterial[Tag=Available]">
                                             <Setter Property="Kind" Value="CheckCircle" />
                                             <Setter Property="Foreground" Value="{DynamicResource SukiGreen}" />
                                         </Style>
-                                        <Style Selector="avalonia|MaterialIcon[Tag=Unavailable]">
+                                        <Style Selector="iconPacks|PackIconMaterial[Tag=Unavailable]">
                                             <Setter Property="Kind" Value="CloseCircle" />
                                             <Setter Property="Foreground" Value="{DynamicResource SukiPrimaryColor}" />
                                         </Style>
-                                        <Style Selector="avalonia|MaterialIcon[Tag=Timeout]">
+                                        <Style Selector="iconPacks|PackIconMaterial[Tag=Timeout]">
                                             <Setter Property="Kind" Value="ClockAlert" />
                                             <Setter Property="Foreground" Value="#FFA500" />
                                         </Style>
-                                    </avalonia:MaterialIcon.Styles>
-                                    <avalonia:MaterialIcon.Tag>
+                                    </iconPacks:PackIconMaterial.Styles>
+                                    <iconPacks:PackIconMaterial.Tag>
                                         <Binding Path="Status" />
-                                    </avalonia:MaterialIcon.Tag>
-                                </avalonia:MaterialIcon>
+                                    </iconPacks:PackIconMaterial.Tag>
+                                </iconPacks:PackIconMaterial>
 
                                 <!-- URL 和错误信息 -->
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">

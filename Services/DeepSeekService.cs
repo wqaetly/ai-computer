@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -22,21 +21,65 @@ public class DeepSeekService
     private const string BaseUrl = "https://api.deepseek.com";
 
     /// <summary>
-    /// 系统提示词
+    /// 首次请求的系统提示词
     /// </summary>
     private const string SystemPrompt = @"你是""玄机鉴""AI分析师，负责解析电脑硬件配置，为用户提供性能评估、瓶颈提示与优化建议，以及根据用户需求直接提供详尽的装机配置单。
 
-你具备联网搜索能力，当需要查询最新硬件信息、价格、性能测试数据时，可以自动联网获取实时信息。当需要查询硬件信息时：
+**重要：深度思考要求**
+对于每个用户问题，你必须进行深度思考和分析：
+- 分析用户的真实需求和使用场景
+- 评估硬件配置的合理性、性能瓶颈、兼容性问题
+- 对比不同硬件方案的优劣
+- 分析性价比和预算分配策略
+- 考虑未来升级空间和长期使用成本
 
-1. **价格查询要求**：
-   - 必须查询京东、淘宝的当前价格
-   - 给出价格区间（最低价-最高价）
-   - 标注价格来源和查询时间
-   - 说明是否促销价格
+请在思考过程中展示你的推理步骤，包括：
+1. 问题分析：理解用户的核心需求
+2. 数据收集：需要哪些信息来回答问题
+3. 方案对比：评估不同的解决方案
+4. 综合判断：权衡各种因素得出结论
 
-2. 提供多个购买渠道的对比
+**网络搜索功能**
+当你需要查询最新硬件信息、价格、性能测试数据等实时信息时，可以在你的思考过程中使用以下格式触发搜索：
+[SEARCH:搜索关键词]
+
+例如：
+- [SEARCH:RTX 4090 京东价格]
+- [SEARCH:AMD Ryzen 9 7950X 性能评测]
+- [SEARCH:DDR5 6000MHz 内存 2024]
+
+系统会自动执行搜索，并将结果返回给你继续分析。你可以在一次思考中使用多次搜索。
+
+**价格查询要求**：
+- 必须查询京东、淘宝的当前价格
+- 给出价格区间（最低价-最高价）
+- 标注价格来源和查询时间
+- 说明是否促销价格
+- 提供多个购买渠道的对比
 
 以上内容要形成清晰、结构化的回答，最好能在每个标题前增加一些Markdown可用的表情，以增加用户体验。";
+
+    /// <summary>
+    /// 搜索后继续回答的系统提示词
+    /// </summary>
+    private const string SystemPromptWithSearchResults = @"你是""玄机鉴""AI分析师，负责解析电脑硬件配置，为用户提供性能评估、瓶颈提示与优化建议，以及根据用户需求直接提供详尽的装机配置单。
+
+**重要提示**：以下消息包含了你之前请求的搜索结果。请基于这些搜索结果，继续完成你的回答。
+
+**严格禁止**：
+- 不要再次使用 [SEARCH:xxx] 标记
+- 不要重新开始思考整个问题
+- 直接基于已有的搜索结果继续分析和回答
+
+**回答要求**：
+- 综合分析搜索结果中的信息
+- 提供性能评估、价格对比、购买建议
+- 给出价格区间（最低价-最高价）
+- 标注价格来源
+- 说明是否促销价格
+- 提供多个购买渠道的对比
+- 形成清晰、结构化的回答
+- 可以在标题前使用 Markdown 表情增加用户体验";
 
     /// <summary>
     /// 构造函数
@@ -59,101 +102,42 @@ public class DeepSeekService
     /// <param name="messages">消息历史</param>
     /// <param name="onReasoningChunk">推理内容回调</param>
     /// <param name="onContentChunk">回答内容回调</param>
-    /// <param name="onToolCall">工具调用回调</param>
+    /// <param name="onSearch">搜索回调，返回搜索结果</param>
+    /// <param name="isSearchFollowUp">是否是搜索后的继续请求（true=禁止再次搜索，直接基于搜索结果回答）</param>
     /// <param name="cancellationToken">取消令牌</param>
     public async Task ChatCompletionStreamAsync(
         List<ChatMessage> messages,
         Action<string> onReasoningChunk,
         Action<string> onContentChunk,
-        Func<string, string, Task<string>>? onToolCall = null,
+        Func<string, Task<string>>? onSearch = null,
+        bool isSearchFollowUp = false,
         CancellationToken cancellationToken = default)
     {
+        // 根据是否是搜索后继续请求，选择不同的系统提示词
+        var systemPrompt = isSearchFollowUp ? SystemPromptWithSearchResults : SystemPrompt;
+
         // 构造消息列表，自动在开头添加系统提示词
         var messageList = new List<object>
         {
-            new { role = "system", content = SystemPrompt }
+            new { role = "system", content = systemPrompt }
         };
 
-        // 添加用户消息历史，根据消息类型和工具调用信息使用不同格式
+        // 添加用户消息历史
         foreach (var m in messages)
         {
             var role = m.Role.ToString().ToLower();
-
-            // 处理 assistant 消息（有 tool_calls）
-            if (m.Role == MessageRole.Assistant && !string.IsNullOrEmpty(m.ToolCallId))
+            messageList.Add(new
             {
-                messageList.Add(new
-                {
-                    role = "assistant",
-                    content = (string?)null, // tool_calls 时 content 可以为 null
-                    tool_calls = new[]
-                    {
-                        new
-                        {
-                            id = m.ToolCallId,
-                            type = "function",
-                            function = new
-                            {
-                                name = m.ToolName,
-                                arguments = JsonSerializer.Serialize(new { query = m.ToolArguments })
-                            }
-                        }
-                    }
-                });
-            }
-            // 处理 tool 角色消息
-            else if (m.Role == MessageRole.Tool)
-            {
-                messageList.Add(new
-                {
-                    role = "tool",
-                    tool_call_id = m.ToolCallId,
-                    content = m.Content
-                });
-            }
-            // 处理普通消息（user/assistant）
-            else
-            {
-                messageList.Add(new
-                {
-                    role = role,
-                    content = m.Content
-                });
-            }
+                role = role,
+                content = m.Content
+            });
         }
 
-        // 定义可用的工具
-        var tools = new[]
-        {
-            new
-            {
-                type = "function",
-                function = new
-                {
-                    name = "web_search",
-                    description = "搜索网络获取最新信息，如硬件价格、性能评测、产品参数等。适用于需要实时数据或最新信息的查询。",
-                    parameters = new
-                    {
-                        type = "object",
-                        properties = new
-                        {
-                            query = new
-                            {
-                                type = "string",
-                                description = "搜索关键词，例如：'RTX 4090 京东价格'、'AMD Ryzen 9 7950X 性能评测'"
-                            }
-                        },
-                        required = new[] { "query" }
-                    }
-                }
-            }
-        };
-
+        // 构造请求体
         var requestBody = new
         {
             model = "deepseek-reasoner",
             messages = messageList.ToArray(),
-            tools = tools,
             stream = true
         };
 
@@ -171,14 +155,13 @@ public class DeepSeekService
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var reader = new StreamReader(stream);
 
-        // 用于累积 tool call 信息
-        string? toolCallId = null;
-        string? toolName = null;
-        var toolArguments = new StringBuilder();
+        // 累积推理内容，用于检测搜索标记
+        var reasoningBuffer = new StringBuilder();
+        var contentBuffer = new StringBuilder();
+        var hasCheckedForSearch = false; // 标记是否已经检查过搜索
 
         while (!reader.EndOfStream)
         {
-            // 主动检查取消令牌
             cancellationToken.ThrowIfCancellationRequested();
 
             var line = await reader.ReadLineAsync(cancellationToken);
@@ -186,7 +169,7 @@ public class DeepSeekService
             if (string.IsNullOrWhiteSpace(line) || !line.StartsWith("data: "))
                 continue;
 
-            var data = line.Substring(6); // 移除 "data: " 前缀
+            var data = line.Substring(6);
 
             if (data == "[DONE]")
                 break;
@@ -200,82 +183,88 @@ public class DeepSeekService
                 var choice = chunk.Choices[0];
                 var delta = choice.Delta;
 
-                // 处理工具调用
-                if (delta?.ToolCalls != null && delta.ToolCalls.Length > 0)
-                {
-                    var toolCall = delta.ToolCalls[0];
-
-                    // 累积 tool call 信息
-                    if (!string.IsNullOrEmpty(toolCall.Id))
-                        toolCallId = toolCall.Id;
-
-                    if (!string.IsNullOrEmpty(toolCall.Function?.Name))
-                        toolName = toolCall.Function.Name;
-
-                    if (!string.IsNullOrEmpty(toolCall.Function?.Arguments))
-                        toolArguments.Append(toolCall.Function.Arguments);
-                }
-
                 // 处理推理内容
                 if (!string.IsNullOrEmpty(delta?.ReasoningContent))
                 {
+                    reasoningBuffer.Append(delta.ReasoningContent);
                     onReasoningChunk?.Invoke(delta.ReasoningContent);
                 }
 
-                // 处理回答内容
+                // 当开始接收正式回答内容时，检查推理中的搜索标记
                 if (!string.IsNullOrEmpty(delta?.Content))
                 {
-                    onContentChunk?.Invoke(delta.Content);
-                }
-
-                // 检查是否完成工具调用
-                if (choice.FinishReason == "tool_calls" && onToolCall != null)
-                {
-                    if (!string.IsNullOrEmpty(toolName) && toolArguments.Length > 0)
+                    // 第一次收到 content，说明推理已经结束，检查是否需要搜索
+                    // 注意：如果是搜索后的继续请求，则不再检查搜索标记
+                    if (!hasCheckedForSearch && !isSearchFollowUp && onSearch != null && reasoningBuffer.Length > 0)
                     {
-                        // 解析工具参数
-                        var argsJson = toolArguments.ToString();
-                        var argsDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(argsJson);
-                        var query = argsDict?["query"].GetString() ?? string.Empty;
+                        hasCheckedForSearch = true;
+                        var reasoningText = reasoningBuffer.ToString();
+                        var searchMatches = System.Text.RegularExpressions.Regex.Matches(reasoningText, @"\[SEARCH:([^\]]+)\]");
 
-                        if (!string.IsNullOrEmpty(query))
+                        if (searchMatches.Count > 0)
                         {
-                            // 执行工具调用
-                            var toolResult = await onToolCall(toolName, query);
-
-                            // 将工具结果添加到消息历史并继续对话
-                            messages.Add(new ChatMessage
+                            // 收集所有搜索关键词（同一轮内去重）
+                            var queries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            foreach (System.Text.RegularExpressions.Match match in searchMatches)
                             {
-                                Role = MessageRole.Assistant,
-                                Content = string.Empty,
-                                ToolCallId = toolCallId,
-                                ToolName = toolName,
-                                ToolArguments = query
-                            });
+                                var query = match.Groups[1].Value.Trim();
+                                if (!string.IsNullOrWhiteSpace(query))
+                                {
+                                    queries.Add(query);
+                                }
+                            }
 
-                            messages.Add(new ChatMessage
+                            // 执行所有搜索
+                            if (queries.Count > 0)
                             {
-                                Role = MessageRole.Tool,
-                                Content = toolResult,
-                                ToolCallId = toolCallId
-                            });
+                                var searchResultsBuilder = new StringBuilder();
+                                searchResultsBuilder.AppendLine("以下是你请求的搜索结果：\n");
 
-                            // 递归调用继续对话（传递相同的回调）
-                            await ChatCompletionStreamAsync(
-                                messages,
-                                onReasoningChunk ?? (_ => { }),
-                                onContentChunk ?? (_ => { }),
-                                onToolCall,
-                                cancellationToken);
-                            return;
+                                foreach (var query in queries)
+                                {
+                                    try
+                                    {
+                                        var searchResult = await onSearch(query);
+                                        searchResultsBuilder.AppendLine($"【搜索关键词：{query}】");
+                                        searchResultsBuilder.AppendLine(searchResult);
+                                        searchResultsBuilder.AppendLine();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        searchResultsBuilder.AppendLine($"【搜索关键词：{query}】");
+                                        searchResultsBuilder.AppendLine($"搜索失败：{ex.Message}");
+                                        searchResultsBuilder.AppendLine();
+                                    }
+                                }
+
+                                // 将搜索结果添加到对话历史
+                                messages.Add(new ChatMessage
+                                {
+                                    Role = MessageRole.User,
+                                    Content = searchResultsBuilder.ToString()
+                                });
+
+                                // 递归调用继续对话，标记为搜索后的继续请求
+                                await ChatCompletionStreamAsync(
+                                    messages,
+                                    onReasoningChunk,
+                                    onContentChunk,
+                                    onSearch,
+                                    isSearchFollowUp: true, // 关键：标记为搜索后的继续请求
+                                    cancellationToken);
+                                return; // 重要：立即返回，不继续处理当前流
+                            }
                         }
                     }
+
+                    // 没有搜索或搜索已处理，正常输出内容
+                    contentBuffer.Append(delta.Content);
+                    onContentChunk?.Invoke(delta.Content);
                 }
             }
-            catch (JsonException ex)
+            catch (JsonException)
             {
-                Console.WriteLine($"JSON 解析错误: {ex.Message}");
-                // 继续处理下一行
+                // 忽略解析错误，继续处理下一行
             }
         }
     }
@@ -288,17 +277,8 @@ public class DeepSeekService
 /// </summary>
 internal class StreamChunk
 {
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
     [JsonPropertyName("choices")]
     public Choice[]? Choices { get; set; }
-
-    [JsonPropertyName("created")]
-    public long Created { get; set; }
-
-    [JsonPropertyName("model")]
-    public string? Model { get; set; }
 }
 
 /// <summary>
@@ -306,9 +286,6 @@ internal class StreamChunk
 /// </summary>
 internal class Choice
 {
-    [JsonPropertyName("index")]
-    public int Index { get; set; }
-
     [JsonPropertyName("delta")]
     public Delta? Delta { get; set; }
 
@@ -326,42 +303,6 @@ internal class Delta
 
     [JsonPropertyName("reasoning_content")]
     public string? ReasoningContent { get; set; }
-
-    [JsonPropertyName("role")]
-    public string? Role { get; set; }
-
-    [JsonPropertyName("tool_calls")]
-    public ToolCall[]? ToolCalls { get; set; }
-}
-
-/// <summary>
-/// 工具调用
-/// </summary>
-internal class ToolCall
-{
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    [JsonPropertyName("function")]
-    public FunctionCall? Function { get; set; }
-
-    [JsonPropertyName("index")]
-    public int Index { get; set; }
-}
-
-/// <summary>
-/// 函数调用
-/// </summary>
-internal class FunctionCall
-{
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
-
-    [JsonPropertyName("arguments")]
-    public string? Arguments { get; set; }
 }
 
 #endregion

@@ -26,7 +26,8 @@
       "Bash(del \"I:\\ai-computer\\ai-computer\\Views\\ChatWindowsView.axaml\")",
       "Bash(del \"I:\\ai-computer\\ai-computer\\Views\\ChatWindowsView.axaml.cs\")",
       "Bash(del \"I:\\ai-computer\\ai-computer\\ViewModels\\ChatWindowsViewModel.cs\")",
-      "Read(//i/ai-computer/**)"
+      "Read(//i/ai-computer/**)",
+      "mcp__mcp-router__sequentialthinking"
     ],
     "deny": [],
     "ask": []

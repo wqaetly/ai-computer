@@ -7,7 +7,8 @@ using AiComputer.Services;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Material.Icons;
+using IconPacks.Avalonia;
+using IconPacks.Avalonia.Material;
 
 namespace AiComputer.ViewModels;
 
@@ -60,7 +61,19 @@ public partial class InstanceTestViewModel : PageBase
     [ObservableProperty]
     private int _totalCount;
 
-    public InstanceTestViewModel() : base("联网搜索测试", MaterialIconKind.Web, 1)
+    /// <summary>
+    /// 测试按钮文字
+    /// </summary>
+    [ObservableProperty]
+    private string _testButtonText = "开始测试";
+
+    /// <summary>
+    /// 测试按钮图标
+    /// </summary>
+    [ObservableProperty]
+    private PackIconMaterialKind _testButtonIcon = PackIconMaterialKind.Play;
+
+    public InstanceTestViewModel() : base("联网搜索测试", PackIconMaterialKind.Web, 1)
     {
         _testService = new InstanceTestService();
         LoadInstances();
@@ -103,9 +116,15 @@ public partial class InstanceTestViewModel : PageBase
     private async Task StartTestAsync()
     {
         if (IsTesting)
+        {
+            // 如果正在测试，则停止测试
+            StopTest();
             return;
+        }
 
         IsTesting = true;
+        TestButtonText = "停止测试";
+        TestButtonIcon = PackIconMaterialKind.Stop;
         _cancellationTokenSource = new CancellationTokenSource();
 
         try
@@ -154,15 +173,16 @@ public partial class InstanceTestViewModel : PageBase
         finally
         {
             IsTesting = false;
+            TestButtonText = "开始测试";
+            TestButtonIcon = PackIconMaterialKind.Play;
             _cancellationTokenSource?.Dispose();
             _cancellationTokenSource = null;
         }
     }
 
     /// <summary>
-    /// 停止测试命令
+    /// 停止测试
     /// </summary>
-    [RelayCommand]
     private void StopTest()
     {
         _cancellationTokenSource?.Cancel();

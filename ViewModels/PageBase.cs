@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using Material.Icons;
+using IconPacks.Avalonia;
+using IconPacks.Avalonia.Material;
 
 namespace AiComputer.ViewModels;
 
@@ -18,7 +19,7 @@ public abstract partial class PageBase : ViewModelBase
     /// 图标
     /// </summary>
     [ObservableProperty]
-    private MaterialIconKind _icon;
+    private PackIconMaterialKind _icon;
 
     /// <summary>
     /// 索引（用于排序）
@@ -26,7 +27,7 @@ public abstract partial class PageBase : ViewModelBase
     [ObservableProperty]
     private int _index;
 
-    protected PageBase(string displayName, MaterialIconKind icon, int index = 0)
+    protected PageBase(string displayName, PackIconMaterialKind icon, int index = 0)
     {
         _displayName = displayName;
         _icon = icon;

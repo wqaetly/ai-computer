@@ -28,6 +28,7 @@ ai-computer/
 ```
 
 ## 开发规范要点
+判定为复杂问题，或者多次要求修复的问题，则尝试调用 sequential-thinking MCP来增强思考能力
 
 ### MVVM 模式
 - ViewModel 使用 `[ObservableObject]` 特性标记
@@ -84,7 +85,7 @@ ai-computer/
 
 ## IconPacks.Avalonia 使用
 
-项目已引入 IconPacks.Avalonia 图标库，包含几乎所有类型的图标。
+项目已引入 IconPacks.Avalonia 图标库，包含几乎所有类型的图标，所以项目中所有用到图标的地方（除了自定义图片资源外）都应使用这个图标库里的图标。
 
 - **使用文档**: `.claude/IconPacks_Avalonia_README.md`
 - 提供多种图标包（Material Design、FontAwesome 等）

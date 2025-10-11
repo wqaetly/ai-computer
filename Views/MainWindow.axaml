@@ -4,11 +4,11 @@
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:suki="https://github.com/kikipoulet/SukiUI"
-                 xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                 xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
                  mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
                  x:Class="AiComputer.Views.MainWindow"
                  x:DataType="vm:MainWindowViewModel"
-                 Icon="/Assets/avalonia-logo.ico"
+                 Icon="/Assets/nkg_icon.png"
                  Title="AI Computer - DeepSeek 智能助手"
                  Width="1200" Height="800"
                  BackgroundStyle="Gradient"
@@ -26,14 +26,15 @@
 
     <!-- 使用 SukiSideMenu 作为主布局 -->
     <suki:SukiSideMenu ItemsSource="{Binding Pages}"
-                       SelectedItem="{Binding ActivePage, Mode=TwoWay}">
+                       SelectedItem="{Binding ActivePage, Mode=TwoWay}"
+                       IsSelectedItemContentMovable="False">
         <!-- 定义侧边栏菜单项的显示方式 -->
         <suki:SukiSideMenu.ItemTemplate>
-            <DataTemplate>
-                <suki:SukiSideMenuItem Classes="Compact"
-                                       Header="{Binding DisplayName}">
+            <DataTemplate DataType="vm:PageBase">
+                <suki:SukiSideMenuItem Header="{Binding DisplayName}"
+                                       Classes="Compact">
                     <suki:SukiSideMenuItem.Icon>
-                        <avalonia:MaterialIcon Kind="{Binding Icon}" />
+                        <iconPacks:PackIconMaterial Kind="{Binding Icon}" />
                     </suki:SukiSideMenuItem.Icon>
                 </suki:SukiSideMenuItem>
             </DataTemplate>
@@ -41,10 +42,11 @@
 
         <!-- 侧边栏头部 -->
         <suki:SukiSideMenu.HeaderContent>
-            <TextBlock Text="⚙️"
-                       FontSize="32"
-                       Margin="0,20,0,20"
-                       HorizontalAlignment="Center" />
+            <Image Source="/Assets/nkg_icon.png"
+                   Width="64"
+                   Height="64"
+                   Margin="0,20,0,20"
+                   HorizontalAlignment="Center" />
         </suki:SukiSideMenu.HeaderContent>
 
         <!-- 侧边栏底部 -->
