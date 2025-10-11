@@ -49,7 +49,13 @@ public partial class AiChatViewModel : PageBase
     /// 是否正在发送消息
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SendButtonText))]
     private bool _isSending;
+
+    /// <summary>
+    /// 发送按钮文字（根据状态动态变化）
+    /// </summary>
+    public string SendButtonText => IsSending ? "停止" : "发送";
 
     /// <summary>
     /// 是否显示欢迎界面（没有消息时显示）
@@ -134,17 +140,32 @@ public partial class AiChatViewModel : PageBase
     [RelayCommand]
     private void RenameSession(ChatSession session)
     {
-        if (session != null)
+        if (session == null) return;
+
+        // TODO: 实现重命名对话框
+        // 暂时禁用此功能
+    }
+
+    /// <summary>
+    /// 发送或停止命令（统一按钮）
+    /// </summary>
+    [RelayCommand]
+    private async Task SendOrStopAsync()
+    {
+        if (IsSending)
         {
-            // TODO: 可以实现一个对话框来输入新标题
-            // 这里暂时使用简单的方式
+            // 如果正在发送，则停止
+            StopGeneration();
+            return;
         }
+
+        // 否则发送消息
+        await SendMessageAsync();
     }
 
     /// <summary>
     /// 发送消息命令
     /// </summary>
-    [RelayCommand]
     private async Task SendMessageAsync()
     {
         if (string.IsNullOrWhiteSpace(InputMessage) || CurrentSession == null)

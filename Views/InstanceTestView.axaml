@@ -89,47 +89,20 @@
 
                 <!-- 按钮组 -->
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Button Content="开始测试"
+                    <Button Content="▶️ 开始测试"
                             Command="{Binding StartTestCommand}"
                             IsEnabled="{Binding !IsTesting}"
-                            Classes="Accent">
-                        <Button.ContentTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <avalonia:MaterialIcon Kind="Play" Width="18" Height="18" />
-                                    <TextBlock Text="开始测试" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </Button.ContentTemplate>
-                    </Button>
+                            Classes="Accent" />
 
-                    <Button Content="停止测试"
+                    <Button Content="⏸️ 停止测试"
                             Command="{Binding StopTestCommand}"
                             IsEnabled="{Binding IsTesting}"
-                            Classes="Flat Accent">
-                        <Button.ContentTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <avalonia:MaterialIcon Kind="Stop" Width="18" Height="18" />
-                                    <TextBlock Text="停止测试" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </Button.ContentTemplate>
-                    </Button>
+                            Classes="Flat Accent" />
 
-                    <Button Content="重新加载"
+                    <Button Content="🔄 重新加载"
                             Command="{Binding ReloadInstancesCommand}"
                             IsEnabled="{Binding !IsTesting}"
-                            Classes="Basic">
-                        <Button.ContentTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <avalonia:MaterialIcon Kind="Refresh" Width="18" Height="18" />
-                                    <TextBlock Text="重新加载" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </Button.ContentTemplate>
-                    </Button>
+                            Classes="Basic" />
                 </StackPanel>
             </StackPanel>
         </suki:GlassCard>

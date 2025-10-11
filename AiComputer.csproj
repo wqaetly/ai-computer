@@ -21,6 +21,7 @@
     <None Update="Services\available_instances.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include=".claude\DEEPSEEK_INTEGRATION.md" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +35,7 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+    <PackageReference Include="IconPacks.Avalonia" Version="1.2.0" />
     <PackageReference Include="LiveMarkdown.Avalonia" Version="1.3.5" />
     <PackageReference Include="Material.Icons.Avalonia" Version="2.4.1" />
     <PackageReference Include="SukiUI" Version="6.0.4-nightly20250930" />

@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:AiComputer.ViewModels"
              xmlns:models="using:AiComputer.Models"
-             xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:content="using:SukiUI.Content"
              xmlns:md="clr-namespace:LiveMarkdown.Avalonia;assembly=LiveMarkdown.Avalonia"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
@@ -31,24 +32,23 @@
                         Background="{DynamicResource SukiCardBackground}"
                         BorderBrush="{DynamicResource SukiBorderBrush}"
                         BorderThickness="0,0,0,1"
-                        Padding="15,18">
+                        Padding="12,10">
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBlock Grid.Column="0"
                                    Text="对话列表"
-                                   FontSize="14"
+                                   FontSize="13"
                                    FontWeight="Bold"
                                    VerticalAlignment="Center" />
 
                         <!-- 新建对话按钮 -->
                         <Button Grid.Column="1"
                                 Command="{Binding CreateNewSessionCommand}"
-                                Classes="Accent"
-                                Width="32"
-                                Height="32"
-                                Padding="0"
-                                CornerRadius="16"
+                                Classes="Basic"
+                                Padding="4"
                                 ToolTip.Tip="新建对话">
-                            <avalonia:MaterialIcon Kind="Plus" Width="20" Height="20" />
+                            <PathIcon Data="{x:Static content:Icons.Plus}"
+                                      Width="16"
+                                      Height="16" />
                         </Button>
                     </Grid>
                 </Border>
@@ -62,7 +62,7 @@
                     <ListBox.Styles>
                         <Style Selector="ListBoxItem">
                             <Setter Property="Padding" Value="0" />
-                            <Setter Property="Margin" Value="0,0,0,6" />
+                            <Setter Property="Margin" Value="0,0,0,4" />
                         </Style>
                         <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
                             <Setter Property="Background" Value="Transparent" />
@@ -70,11 +70,24 @@
                     </ListBox.Styles>
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="models:ChatSession">
-                            <Border CornerRadius="8"
+                            <Border CornerRadius="6"
                                     Background="Transparent"
-                                    BorderThickness="2"
+                                    BorderThickness="1"
                                     BorderBrush="Transparent"
-                                    Padding="12,10">
+                                    Padding="12,8">
+                                <!-- 右键菜单 -->
+                                <Border.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="重命名"
+                                                  Command="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).RenameSessionCommand}"
+                                                  CommandParameter="{Binding}" />
+                                        <Separator />
+                                        <MenuItem Header="删除"
+                                                  Command="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).DeleteSessionCommand}"
+                                                  CommandParameter="{Binding}" />
+                                    </ContextMenu>
+                                </Border.ContextMenu>
+
                                 <!-- 样式定义 -->
                                 <Border.Styles>
                                     <Style Selector="Border">
@@ -90,48 +103,13 @@
                                     </Style>
                                 </Border.Styles>
 
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <!-- 内容区域 -->
-                                    <StackPanel Grid.Column="0" Spacing="4">
-                                        <!-- 标题 -->
-                                        <TextBlock Text="{Binding Title}"
-                                                   FontSize="13"
-                                                   FontWeight="Medium"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   MaxLines="1" />
-
-                                        <!-- 预览 -->
-                                        <TextBlock Text="{Binding PreviewText}"
-                                                   FontSize="11"
-                                                   Opacity="0.6"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   MaxLines="1" />
-
-                                        <!-- 时间 -->
-                                        <TextBlock Text="{Binding LastUpdated, StringFormat='{}{0:MM/dd HH:mm}'}"
-                                                   FontSize="10"
-                                                   Opacity="0.5" />
-                                    </StackPanel>
-
-                                    <!-- 删除按钮 -->
-                                    <Button Grid.Column="1"
-                                            Command="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).DeleteSessionCommand}"
-                                            CommandParameter="{Binding}"
-                                            Classes="Basic"
-                                            Width="28"
-                                            Height="28"
-                                            Padding="0"
-                                            VerticalAlignment="Top"
-                                            ToolTip.Tip="删除对话"
-                                            Opacity="0.6">
-                                        <Button.Styles>
-                                            <Style Selector="Button:pointerover">
-                                                <Setter Property="Opacity" Value="1" />
-                                            </Style>
-                                        </Button.Styles>
-                                        <avalonia:MaterialIcon Kind="Delete" Width="16" Height="16" />
-                                    </Button>
-                                </Grid>
+                                <!-- 标题 -->
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="13"
+                                           FontWeight="Medium"
+                                           TextTrimming="CharacterEllipsis"
+                                           MaxLines="1"
+                                           VerticalAlignment="Center" />
                             </Border>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -326,7 +304,7 @@
                     BorderBrush="{DynamicResource SukiBorderBrush}"
                     BorderThickness="0,1,0,0"
                     Padding="20">
-                <Grid ColumnDefinitions="*,Auto,Auto">
+                <Grid ColumnDefinitions="*,Auto">
                     <!-- 文本输入框 -->
                     <TextBox Grid.Column="0"
                              Text="{Binding InputMessage, Mode=TwoWay}"
@@ -336,24 +314,17 @@
                              MaxHeight="120"
                              VerticalAlignment="Center">
                         <TextBox.KeyBindings>
-                            <KeyBinding Gesture="Ctrl+Enter" Command="{Binding SendMessageCommand}" />
+                            <KeyBinding Gesture="Ctrl+Enter" Command="{Binding SendOrStopCommand}" />
                         </TextBox.KeyBindings>
                     </TextBox>
 
-                    <!-- 发送按钮 -->
+                    <!-- 发送/停止按钮 -->
                     <Button Grid.Column="1"
-                            Content="发送"
-                            Command="{Binding SendMessageCommand}"
+                            Content="{Binding SendButtonText}"
+                            Command="{Binding SendOrStopCommand}"
+                            suki:ButtonExtensions.ShowProgress="{Binding IsSending}"
                             Margin="10,0,0,0"
                             Classes="Accent"
-                            VerticalAlignment="Center" />
-
-                    <!-- 停止按钮 -->
-                    <Button Grid.Column="2"
-                            Content="停止"
-                            Command="{Binding StopGenerationCommand}"
-                            Margin="10,0,0,0"
-                            Classes="Flat Accent"
                             VerticalAlignment="Center" />
                 </Grid>
             </Border>

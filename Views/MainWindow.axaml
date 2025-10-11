@@ -1,10 +1,9 @@
 <suki:SukiWindow xmlns="https://github.com/avaloniaui"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:vm="using:AiComputer.ViewModels"
-                 xmlns:views="using:AiComputer.Views"
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                 xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+                 xmlns:suki="https://github.com/kikipoulet/SukiUI"
                  xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                  mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
                  x:Class="AiComputer.Views.MainWindow"
@@ -19,30 +18,23 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
+    <!-- SukiUI Hosts -->
+    <suki:SukiWindow.Hosts>
+        <suki:SukiDialogHost x:Name="DialogHost" />
+        <suki:SukiToastHost x:Name="ToastHost" />
+    </suki:SukiWindow.Hosts>
+
     <!-- 使用 SukiSideMenu 作为主布局 -->
     <suki:SukiSideMenu ItemsSource="{Binding Pages}"
                        SelectedItem="{Binding ActivePage, Mode=TwoWay}">
         <!-- 定义侧边栏菜单项的显示方式 -->
         <suki:SukiSideMenu.ItemTemplate>
-            <DataTemplate DataType="vm:PageBase">
+            <DataTemplate>
                 <suki:SukiSideMenuItem Classes="Compact"
                                        Header="{Binding DisplayName}">
                     <suki:SukiSideMenuItem.Icon>
                         <avalonia:MaterialIcon Kind="{Binding Icon}" />
                     </suki:SukiSideMenuItem.Icon>
-                    <!-- 设置页面内容 -->
-                    <suki:SukiSideMenuItem.PageContent>
-                        <ContentControl Content="{Binding}">
-                            <ContentControl.DataTemplates>
-                                <DataTemplate DataType="vm:AiChatViewModel">
-                                    <views:AiChatView />
-                                </DataTemplate>
-                                <DataTemplate DataType="vm:InstanceTestViewModel">
-                                    <views:InstanceTestView />
-                                </DataTemplate>
-                            </ContentControl.DataTemplates>
-                        </ContentControl>
-                    </suki:SukiSideMenuItem.PageContent>
                 </suki:SukiSideMenuItem>
             </DataTemplate>
         </suki:SukiSideMenu.ItemTemplate>
