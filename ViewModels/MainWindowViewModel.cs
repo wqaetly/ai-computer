@@ -2,5 +2,8 @@
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    public string Greeting { get; } = "Welcome to Avalonia!";
+    /// <summary>
+    /// AI 聊天 ViewModel
+    /// </summary>
+    public AiChatViewModel AiChatViewModel { get; } = new();
 }

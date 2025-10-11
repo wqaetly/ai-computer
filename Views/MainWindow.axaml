@@ -1,133 +1,23 @@
 <suki:SukiWindow xmlns="https://github.com/avaloniaui"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:vm="using:AiComputer.ViewModels"
-                 xmlns:models="using:AiComputer.Models"
+                 xmlns:views="using:AiComputer.Views"
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
                  mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
                  x:Class="AiComputer.Views.MainWindow"
-                 x:DataType="vm:ChatViewModel"
+                 x:DataType="vm:MainWindowViewModel"
                  Icon="/Assets/avalonia-logo.ico"
-                 Title="AI Computer - 智能对话助手"
-                 Width="900" Height="700"
+                 Title="AI Computer - DeepSeek 智能助手"
+                 Width="1000" Height="750"
                  BackgroundStyle="Gradient">
 
     <Design.DataContext>
-        <vm:ChatViewModel/>
+        <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="*,Auto">
-        <!-- 聊天消息区域 -->
-        <ScrollViewer Grid.Row="0" Margin="10">
-            <ItemsControl ItemsSource="{Binding Messages}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="models:ChatMessage">
-                        <Grid Margin="0,10">
-                            <!-- 用户消息 - 右对齐 -->
-                            <Grid.Styles>
-                                <Style Selector="Border.user-message">
-                                    <Setter Property="Background" Value="#0084FF"/>
-                                    <Setter Property="CornerRadius" Value="18"/>
-                                    <Setter Property="Padding" Value="16,10"/>
-                                    <Setter Property="MaxWidth" Value="600"/>
-                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Margin" Value="60,0,0,0"/>
-                                </Style>
-
-                                <Style Selector="Border.assistant-message">
-                                    <Setter Property="Background" Value="{DynamicResource SukiCardBackground}"/>
-                                    <Setter Property="CornerRadius" Value="18"/>
-                                    <Setter Property="Padding" Value="16,10"/>
-                                    <Setter Property="MaxWidth" Value="600"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="Margin" Value="0,0,60,0"/>
-                                </Style>
-
-                                <Style Selector="TextBlock.user-text">
-                                    <Setter Property="Foreground" Value="White"/>
-                                    <Setter Property="TextWrapping" Value="Wrap"/>
-                                </Style>
-
-                                <Style Selector="TextBlock.assistant-text">
-                                    <Setter Property="TextWrapping" Value="Wrap"/>
-                                </Style>
-                            </Grid.Styles>
-
-                            <!-- 用户消息 -->
-                            <Border Classes="user-message" IsVisible="{Binding IsUser}">
-                                <StackPanel Spacing="5">
-                                    <TextBlock Text="{Binding Content}"
-                                             Classes="user-text"
-                                             FontSize="14"/>
-                                    <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                                             Foreground="#E0E0E0"
-                                             FontSize="11"
-                                             HorizontalAlignment="Right"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- AI助手消息 -->
-                            <Border Classes="assistant-message" IsVisible="{Binding IsAssistant}">
-                                <StackPanel Spacing="5">
-                                    <TextBlock Text="AI助手"
-                                             FontWeight="Bold"
-                                             FontSize="12"
-                                             Opacity="0.7"/>
-                                    <TextBlock Text="{Binding Content}"
-                                             Classes="assistant-text"
-                                             FontSize="14"/>
-                                    <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                                             Opacity="0.5"
-                                             FontSize="11"
-                                             HorizontalAlignment="Right"/>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-
-        <!-- 输入区域 -->
-        <suki:GlassCard Grid.Row="1"
-                        Margin="10,0,10,10"
-                        Padding="15"
-                        IsOpaque="True">
-            <Grid ColumnDefinitions="*,Auto,Auto">
-                <!-- 输入框 -->
-                <TextBox Grid.Column="0"
-                         Text="{Binding InputText}"
-                         Watermark="输入消息..."
-                         VerticalContentAlignment="Center"
-                         FontSize="14"
-                         Margin="0,0,10,0">
-                    <TextBox.KeyBindings>
-                        <KeyBinding Gesture="Enter" Command="{Binding SendMessageCommand}"/>
-                    </TextBox.KeyBindings>
-                </TextBox>
-
-                <!-- 清空按钮 -->
-                <Button Grid.Column="1"
-                        Content="清空"
-                        Command="{Binding ClearMessagesCommand}"
-                        Margin="0,0,10,0"
-                        Padding="20,8"/>
-
-                <!-- 发送按钮 -->
-                <Button Grid.Column="2"
-                        Content="发送"
-                        Command="{Binding SendMessageCommand}"
-                        Classes="Accent"
-                        Padding="25,8"/>
-            </Grid>
-        </suki:GlassCard>
-
-        <!-- 加载指示器 -->
-        <suki:BusyArea Grid.Row="0"
-                       Grid.RowSpan="2"
-                       IsBusy="{Binding IsWaitingForResponse}"
-                       BusyText="AI正在思考中..."/>
-    </Grid>
+    <!-- 直接嵌入 AiChatView -->
+    <views:AiChatView DataContext="{Binding AiChatViewModel}" />
 
 </suki:SukiWindow>

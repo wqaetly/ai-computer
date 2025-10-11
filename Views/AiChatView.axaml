@@ -1,0 +1,238 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:AiComputer.ViewModels"
+             xmlns:models="using:AiComputer.Models"
+             xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+             xmlns:md="clr-namespace:LiveMarkdown.Avalonia;assembly=LiveMarkdown.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="AiComputer.Views.AiChatView"
+             x:DataType="vm:AiChatViewModel">
+
+    <Design.DataContext>
+        <vm:AiChatViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource SukiBackground}" Padding="20,15">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="玄机鉴 AI 分析师" FontSize="20" FontWeight="Bold" />
+                    <TextBlock Text="专业电脑硬件配置分析与装机方案推荐" FontSize="12" Opacity="0.7" Margin="0,4,0,0" />
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        Content="清空对话"
+                        Command="{Binding ClearMessagesCommand}"
+                        Classes="Basic"
+                        VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+
+        <!-- 内容区域 -->
+        <Grid Grid.Row="1">
+            <!-- 欢迎界面 -->
+            <Grid IsVisible="{Binding ShowWelcomeScreen}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center">
+                <suki:GlassCard MaxWidth="500" Padding="30,25">
+                    <StackPanel Spacing="12" HorizontalAlignment="Center">
+                        <!-- 大标题 -->
+                        <TextBlock Text="⚙️ 玄机鉴 AI 分析师"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource SukiPrimaryColor}" />
+
+                        <!-- 副标题 -->
+                        <TextBlock Text="专业电脑硬件配置分析与装机方案推荐"
+                                   FontSize="12"
+                                   Opacity="0.8"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8" />
+
+                        <!-- 分隔线 -->
+                        <Separator Margin="0,4,0,8" />
+
+                        <!-- 欢迎内容 -->
+                        <Border>
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       LineHeight="20"
+                                       Opacity="0.9"
+                                       HorizontalAlignment="Left">
+                                <Run Text="&#10;" />
+                                <Run Text="🎯 " FontSize="14" />
+                                <Run Text="核心功能" FontWeight="Bold" FontSize="14" />
+                                <Run Text="&#10;" />
+                                <Run Text="• " />
+                                <Run Text="配置评估：" FontWeight="Bold" />
+                                <Run Text="分析硬件配置，识别瓶颈" />
+                                <Run Text="&#10;" />
+                                <Run Text="• " />
+                                <Run Text="装机方案：" FontWeight="Bold" />
+                                <Run Text="提供配置清单和购买渠道" />
+                                <Run Text="&#10;" />
+                                <Run Text="• " />
+                                <Run Text="实时价格：" FontWeight="Bold" />
+                                <Run Text="查询京东、淘宝最新价格" />
+                                <Run Text="&#10;" />
+                                <Run Text="• " />
+                                <Run Text="性能测试：" FontWeight="Bold" />
+                                <Run Text="获取硬件性能测试数据" />
+                                <Run Text="&#10;&#10;" />
+                                <Run Text="💡 " FontSize="14" />
+                                <Run Text="使用示例" FontWeight="Bold" FontSize="14" />
+                                <Run Text="&#10;" />
+                                <Run Text="• RTX 4060 + i5-13400F 玩 4K 游戏会卡吗？" FontStyle="Italic" FontSize="12" />
+                                <Run Text="&#10;" />
+                                <Run Text="• 8000 元预算帮我配一台编程建模主机" FontStyle="Italic" FontSize="12" />
+                                <Run Text="&#10;" />
+                                <Run Text="• RTX 4070 Ti 和 RX 7900 XT 哪个性价比高？" FontStyle="Italic" FontSize="12" />
+                                <Run Text="&#10;&#10;" />
+                                <Run Text="🚀 " FontSize="14" />
+                                <Run Text="开始对话" FontWeight="Bold" FontSize="14" />
+                                <Run Text="&#10;" />
+                                <Run Text="输入配置或需求，按 " FontSize="12" />
+                                <Run Text="Ctrl+Enter" FontWeight="Bold" Foreground="{DynamicResource SukiPrimaryColor}" FontSize="12" />
+                                <Run Text=" 发送" FontSize="12" />
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+                </suki:GlassCard>
+            </Grid>
+
+            <!-- 消息列表 -->
+            <ScrollViewer IsVisible="{Binding !ShowWelcomeScreen}"
+                          Padding="20"
+                          Name="MessageScrollViewer">
+                <ItemsControl ItemsSource="{Binding Messages}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="models:ChatMessage">
+                            <Grid Margin="0,0,0,15">
+                                <!-- 用户消息 -->
+                                <StackPanel IsVisible="{Binding IsUser}">
+                                    <Border Background="{DynamicResource SukiPrimaryColor}"
+                                            CornerRadius="12"
+                                            Padding="15"
+                                            HorizontalAlignment="Right"
+                                            MaxWidth="600">
+                                        <!-- Markdown 渲染器 -->
+                                        <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
+                                    </Border>
+                                    <TextBlock Text="{Binding Timestamp, StringFormat='HH:mm:ss'}"
+                                               FontSize="11"
+                                               Opacity="0.6"
+                                               HorizontalAlignment="Right"
+                                               Margin="0,5,0,0" />
+                                </StackPanel>
+
+                                <!-- AI 助手消息 -->
+                                <StackPanel IsVisible="{Binding IsAssistant}">
+                                    <suki:GlassCard HorizontalAlignment="Left" MaxWidth="700">
+                                        <StackPanel>
+                                            <!-- 推理内容（思考过程） -->
+                                            <Border IsVisible="{Binding HasReasoning}"
+                                                    Background="{DynamicResource SukiCardBackground}"
+                                                    CornerRadius="8"
+                                                    Padding="12"
+                                                    Margin="0,0,0,10">
+                                                <StackPanel>
+                                                    <Button Content="{Binding IsReasoningExpanded, Converter={StaticResource ReasoningButtonConverter}}"
+                                                            Command="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).ToggleReasoningCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Classes="Basic"
+                                                            HorizontalAlignment="Left"
+                                                            Padding="8,4" />
+
+                                                    <!-- 展开的思考内容 -->
+                                                    <Border IsVisible="{Binding IsReasoningExpanded}"
+                                                            Margin="0,10,0,0">
+                                                        <ScrollViewer MaxHeight="300" HorizontalScrollBarVisibility="Disabled">
+                                                            <!-- Markdown 渲染器 -->
+                                                            <md:MarkdownRenderer MarkdownBuilder="{Binding ReasoningContentBuilder}" />
+                                                        </ScrollViewer>
+                                                    </Border>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- 回答内容 -->
+                                            <!-- Markdown 渲染器 -->
+                                            <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
+                                        </StackPanel>
+                                    </suki:GlassCard>
+
+                                    <!-- 时间戳和状态 -->
+                                    <StackPanel Orientation="Horizontal"
+                                               HorizontalAlignment="Left"
+                                               Margin="15,5,0,0"
+                                               Spacing="8">
+                                        <TextBlock Text="{Binding Timestamp, StringFormat='HH:mm:ss'}"
+                                                  FontSize="11"
+                                                  Opacity="0.6" />
+
+                                        <!-- AI 状态标识 -->
+                                        <TextBlock Text="{Binding StatusText}"
+                                                  FontSize="11"
+                                                  Opacity="0.7"
+                                                  Foreground="{DynamicResource SukiPrimaryColor}"
+                                                  FontWeight="Medium"
+                                                  IsVisible="{Binding ShowStatus}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- 输入框 -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource SukiBackground}"
+                BorderBrush="{DynamicResource SukiBorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="20">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                <!-- 文本输入框 -->
+                <TextBox Grid.Column="0"
+                         Text="{Binding InputMessage, Mode=TwoWay}"
+                         Watermark="输入您的硬件配置或装机需求... (支持多行输入，Ctrl+Enter 发送)"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MaxHeight="120"
+                         VerticalAlignment="Center">
+                    <TextBox.KeyBindings>
+                        <KeyBinding Gesture="Ctrl+Enter" Command="{Binding SendMessageCommand}" />
+                    </TextBox.KeyBindings>
+                </TextBox>
+
+                <!-- 测试按钮（无 CanExecute 检查） -->
+                <Button Grid.Column="1"
+                        Content="测试"
+                        Command="{Binding ClearMessagesCommand}"
+                        Margin="10,0,0,0"
+                        Classes="Basic"
+                        VerticalAlignment="Center" />
+
+                <!-- 发送按钮 -->
+                <Button Grid.Column="2"
+                        Content="发送"
+                        Command="{Binding SendMessageCommand}"
+                        Margin="10,0,0,0"
+                        Classes="Accent"
+                        VerticalAlignment="Center" />
+
+                <!-- 停止按钮 -->
+                <Button Grid.Column="3"
+                        Content="停止"
+                        Command="{Binding StopGenerationCommand}"
+                        Margin="10,0,0,0"
+                        Classes="Flat Accent"
+                        VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

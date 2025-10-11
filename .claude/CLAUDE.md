@@ -6,10 +6,11 @@
 
 ### 技术栈
 - **UI 框架**: Avalonia 11.3.6
+- **UI 库**: SukiUI 6.0.4-nightly20250930
 - **目标框架**: .NET 9.0
 - **架构模式**: MVVM (Model-View-ViewModel)
 - **MVVM 工具包**: CommunityToolkit.Mvvm 8.2.1
-- **主题**: Fluent Design
+- **主题**: SukiUI Theme (支持亮色/暗色主题切换)
 - **开发工具**: JetBrains Rider
 
 ## 项目结构
@@ -283,12 +284,58 @@ private void NavigateToSettings()
 }
 ```
 
+## SukiUI 使用指南
+
+项目使用 SukiUI 作为主要 UI 库，提供现代化的控件和主题支持。
+
+### 基本配置
+
+#### 1. App.axaml 配置
+```xml
+<Application xmlns:suki="clr-namespace:SukiUI;assembly=SukiUI">
+    <Application.Styles>
+        <suki:SukiTheme ThemeColor="Blue" />
+    </Application.Styles>
+</Application>
+```
+
+#### 2. SukiWindow 使用
+```xml
+<suki:SukiWindow xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+                 BackgroundStyle="Gradient">
+    <!-- 窗口内容 -->
+</suki:SukiWindow>
+```
+
+### 常用控件
+
+- **GlassCard**: 玻璃风格的卡片容器
+- **BusyArea**: 加载指示器
+- **SukiToastHost**: Toast 通知
+- **SukiDialogHost**: 对话框容器
+
+### 官方示例参考
+
+**重要**: `../SukiUI` 目录包含 SukiUI 的官方使用示例，在实现新功能时应优先参考该示例项目中的实现方式。
+
+示例包括：
+- 各种控件的使用方法
+- 布局和样式最佳实践
+- 主题切换实现
+- 对话框和通知系统
+
+### Context7 文档查询
+
+在需要查询 SukiUI 文档时，可以使用 Context7 的 `/kikipoulet/sukiui` 库 ID 获取最新文档。
+
 ## 资源和文档
 
 - [Avalonia 官方文档](https://docs.avaloniaui.net/)
 - [Avalonia GitHub](https://github.com/AvaloniaUI/Avalonia)
 - [CommunityToolkit.Mvvm 文档](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)
 - [Fluent Design System](https://www.microsoft.com/design/fluent/)
+- [SukiUI GitHub](https://github.com/kikipoulet/SukiUI)
+- **SukiUI 官方示例**: `../SukiUI` 目录（开发时的主要参考）
 
 ## 注意事项
 
