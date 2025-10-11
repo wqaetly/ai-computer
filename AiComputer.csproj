@@ -25,5 +25,6 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
     <PackageReference Include="SukiUI" Version="6.0.4-nightly20250930" />
+    <PackageReference Include="SukiUI.Dock" Version="6.0.4-nightly20250930" />
   </ItemGroup>
 </Project>
