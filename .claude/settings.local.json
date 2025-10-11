@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo $APPDATA)",
+      "Read(//c/Users/developli/AppData/Roaming/**)",
+      "Read(//c/Users/developli/.config/**)",
+      "mcp__mcp-router__resolve-library-id",
+      "mcp__mcp-router__get-library-docs",
+      "Bash(dotnet new:*)",
+      "Bash(tree:*)",
+      "Bash(dotnet build)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "enabledMcpjsonServers": [
+    "mcp-router"
+  ]
+}
