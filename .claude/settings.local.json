@@ -15,7 +15,9 @@
       "Bash(taskkill:*)",
       "Bash(powershell:*)",
       "WebSearch",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Read(//i/ai-computer/mcp-searxng-public/**)",
+      "Bash(dotnet run:*)"
     ],
     "deny": [],
     "ask": []

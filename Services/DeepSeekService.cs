@@ -59,11 +59,13 @@ public class DeepSeekService
     /// <param name="messages">消息历史</param>
     /// <param name="onReasoningChunk">推理内容回调</param>
     /// <param name="onContentChunk">回答内容回调</param>
+    /// <param name="onToolCall">工具调用回调</param>
     /// <param name="cancellationToken">取消令牌</param>
     public async Task ChatCompletionStreamAsync(
         List<ChatMessage> messages,
         Action<string> onReasoningChunk,
         Action<string> onContentChunk,
+        Func<string, string, Task<string>>? onToolCall = null,
         CancellationToken cancellationToken = default)
     {
         // 构造消息列表，自动在开头添加系统提示词
@@ -72,17 +74,86 @@ public class DeepSeekService
             new { role = "system", content = SystemPrompt }
         };
 
-        // 添加用户消息历史
-        messageList.AddRange(messages.Select(m => new
+        // 添加用户消息历史，根据消息类型和工具调用信息使用不同格式
+        foreach (var m in messages)
         {
-            role = m.Role.ToString().ToLower(),
-            content = m.Content
-        }));
+            var role = m.Role.ToString().ToLower();
+
+            // 处理 assistant 消息（有 tool_calls）
+            if (m.Role == MessageRole.Assistant && !string.IsNullOrEmpty(m.ToolCallId))
+            {
+                messageList.Add(new
+                {
+                    role = "assistant",
+                    content = (string?)null, // tool_calls 时 content 可以为 null
+                    tool_calls = new[]
+                    {
+                        new
+                        {
+                            id = m.ToolCallId,
+                            type = "function",
+                            function = new
+                            {
+                                name = m.ToolName,
+                                arguments = JsonSerializer.Serialize(new { query = m.ToolArguments })
+                            }
+                        }
+                    }
+                });
+            }
+            // 处理 tool 角色消息
+            else if (m.Role == MessageRole.Tool)
+            {
+                messageList.Add(new
+                {
+                    role = "tool",
+                    tool_call_id = m.ToolCallId,
+                    content = m.Content
+                });
+            }
+            // 处理普通消息（user/assistant）
+            else
+            {
+                messageList.Add(new
+                {
+                    role = role,
+                    content = m.Content
+                });
+            }
+        }
+
+        // 定义可用的工具
+        var tools = new[]
+        {
+            new
+            {
+                type = "function",
+                function = new
+                {
+                    name = "web_search",
+                    description = "搜索网络获取最新信息，如硬件价格、性能评测、产品参数等。适用于需要实时数据或最新信息的查询。",
+                    parameters = new
+                    {
+                        type = "object",
+                        properties = new
+                        {
+                            query = new
+                            {
+                                type = "string",
+                                description = "搜索关键词，例如：'RTX 4090 京东价格'、'AMD Ryzen 9 7950X 性能评测'"
+                            }
+                        },
+                        required = new[] { "query" }
+                    }
+                }
+            }
+        };
 
         var requestBody = new
         {
             model = "deepseek-reasoner",
             messages = messageList.ToArray(),
+            tools = tools,
             stream = true
         };
 
@@ -99,6 +170,11 @@ public class DeepSeekService
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var reader = new StreamReader(stream);
+
+        // 用于累积 tool call 信息
+        string? toolCallId = null;
+        string? toolName = null;
+        var toolArguments = new StringBuilder();
 
         while (!reader.EndOfStream)
         {
@@ -124,6 +200,22 @@ public class DeepSeekService
                 var choice = chunk.Choices[0];
                 var delta = choice.Delta;
 
+                // 处理工具调用
+                if (delta?.ToolCalls != null && delta.ToolCalls.Length > 0)
+                {
+                    var toolCall = delta.ToolCalls[0];
+
+                    // 累积 tool call 信息
+                    if (!string.IsNullOrEmpty(toolCall.Id))
+                        toolCallId = toolCall.Id;
+
+                    if (!string.IsNullOrEmpty(toolCall.Function?.Name))
+                        toolName = toolCall.Function.Name;
+
+                    if (!string.IsNullOrEmpty(toolCall.Function?.Arguments))
+                        toolArguments.Append(toolCall.Function.Arguments);
+                }
+
                 // 处理推理内容
                 if (!string.IsNullOrEmpty(delta?.ReasoningContent))
                 {
@@ -134,6 +226,50 @@ public class DeepSeekService
                 if (!string.IsNullOrEmpty(delta?.Content))
                 {
                     onContentChunk?.Invoke(delta.Content);
+                }
+
+                // 检查是否完成工具调用
+                if (choice.FinishReason == "tool_calls" && onToolCall != null)
+                {
+                    if (!string.IsNullOrEmpty(toolName) && toolArguments.Length > 0)
+                    {
+                        // 解析工具参数
+                        var argsJson = toolArguments.ToString();
+                        var argsDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(argsJson);
+                        var query = argsDict?["query"].GetString() ?? string.Empty;
+
+                        if (!string.IsNullOrEmpty(query))
+                        {
+                            // 执行工具调用
+                            var toolResult = await onToolCall(toolName, query);
+
+                            // 将工具结果添加到消息历史并继续对话
+                            messages.Add(new ChatMessage
+                            {
+                                Role = MessageRole.Assistant,
+                                Content = string.Empty,
+                                ToolCallId = toolCallId,
+                                ToolName = toolName,
+                                ToolArguments = query
+                            });
+
+                            messages.Add(new ChatMessage
+                            {
+                                Role = MessageRole.Tool,
+                                Content = toolResult,
+                                ToolCallId = toolCallId
+                            });
+
+                            // 递归调用继续对话（传递相同的回调）
+                            await ChatCompletionStreamAsync(
+                                messages,
+                                onReasoningChunk ?? (_ => { }),
+                                onContentChunk ?? (_ => { }),
+                                onToolCall,
+                                cancellationToken);
+                            return;
+                        }
+                    }
                 }
             }
             catch (JsonException ex)
@@ -193,6 +329,39 @@ internal class Delta
 
     [JsonPropertyName("role")]
     public string? Role { get; set; }
+
+    [JsonPropertyName("tool_calls")]
+    public ToolCall[]? ToolCalls { get; set; }
+}
+
+/// <summary>
+/// 工具调用
+/// </summary>
+internal class ToolCall
+{
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+
+    [JsonPropertyName("function")]
+    public FunctionCall? Function { get; set; }
+
+    [JsonPropertyName("index")]
+    public int Index { get; set; }
+}
+
+/// <summary>
+/// 函数调用
+/// </summary>
+internal class FunctionCall
+{
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("arguments")]
+    public string? Arguments { get; set; }
 }
 
 #endregion

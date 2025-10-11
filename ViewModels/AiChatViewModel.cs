@@ -17,6 +17,7 @@ namespace AiComputer.ViewModels;
 public partial class AiChatViewModel : ViewModelBase
 {
     private readonly DeepSeekService _deepSeekService;
+    private readonly SearchService _searchService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>
@@ -48,6 +49,9 @@ public partial class AiChatViewModel : ViewModelBase
     {
         // 使用提供的 API Key
         _deepSeekService = new DeepSeekService("sk-e8ec7e0c860d4b7d98ffc4212ab2c138");
+
+        // 初始化搜索服务
+        _searchService = new SearchService();
 
         // 监听消息集合变化，更新欢迎界面显示状态
         Messages.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowWelcomeScreen));
@@ -143,6 +147,32 @@ public partial class AiChatViewModel : ViewModelBase
                             assistantMsg.ContentBuilder.Append(contentChunk);
                             assistantMsg.Content += contentChunk; // 保持字符串同步用于状态判断
                         });
+                    },
+                    async (toolName, query) =>
+                    {
+                        // 工具调用回调 - 执行联网搜索
+                        if (toolName == "web_search")
+                        {
+                            // 更新状态为搜索中
+                            await Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                assistantMsg.Status = AiMessageStatus.Searching;
+                            });
+
+                            Console.WriteLine($"🔍 AI 请求搜索: {query}");
+
+                            // 执行搜索
+                            var searchResults = await _searchService.SearchAsync(query, 5, _cancellationTokenSource!.Token);
+
+                            // 格式化搜索结果
+                            var formattedResults = SearchService.FormatSearchResults(searchResults);
+
+                            Console.WriteLine($"✓ 搜索完成，找到 {searchResults.Count} 条结果");
+
+                            return formattedResults;
+                        }
+
+                        return "未知的工具调用";
                     },
                     _cancellationTokenSource.Token
                 );

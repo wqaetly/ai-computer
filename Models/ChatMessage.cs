@@ -22,7 +22,12 @@ public enum MessageRole
     /// <summary>
     /// AI助手消息
     /// </summary>
-    Assistant
+    Assistant,
+
+    /// <summary>
+    /// 工具消息（用于 Function Calling）
+    /// </summary>
+    Tool
 }
 
 /// <summary>
@@ -39,6 +44,11 @@ public enum AiMessageStatus
     /// 思考中
     /// </summary>
     Thinking,
+
+    /// <summary>
+    /// 联网搜索中
+    /// </summary>
+    Searching,
 
     /// <summary>
     /// 输出中
@@ -100,6 +110,21 @@ public partial class ChatMessage : ObservableObject
     public DateTime Timestamp { get; set; } = DateTime.Now;
 
     /// <summary>
+    /// 工具调用 ID（用于 Function Calling）
+    /// </summary>
+    public string? ToolCallId { get; set; }
+
+    /// <summary>
+    /// 工具名称（用于 Function Calling）
+    /// </summary>
+    public string? ToolName { get; set; }
+
+    /// <summary>
+    /// 工具参数（用于 Function Calling）
+    /// </summary>
+    public string? ToolArguments { get; set; }
+
+    /// <summary>
     /// 是否正在接收流式内容
     /// </summary>
     [ObservableProperty]
@@ -141,6 +166,7 @@ public partial class ChatMessage : ObservableObject
     {
         AiMessageStatus.Waiting => "等待响应中...",
         AiMessageStatus.Thinking => "思考中...",
+        AiMessageStatus.Searching => "联网搜索中...",
         AiMessageStatus.Generating => "输出中...",
         AiMessageStatus.Completed => "已完成",
         AiMessageStatus.Cancelled => "已取消",
