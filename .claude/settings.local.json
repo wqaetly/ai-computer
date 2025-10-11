@@ -17,7 +17,16 @@
       "WebSearch",
       "WebFetch(domain:github.com)",
       "Read(//i/ai-computer/mcp-searxng-public/**)",
-      "Bash(dotnet run:*)"
+      "Bash(dotnet run:*)",
+      "Read(//i/ai-computer/SukiUI/SukiUI.Demo/**)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(if exist \"I:\\ai-computer\\ai-computer\\Services\\available_instances.json\" del \"I:\\ai-computer\\ai-computer\\Services\\available_instances.json\")",
+      "Bash(if exist \"I:\\ai-computer\\ai-computer\\bin\\Debug\\net9.0\\Services\\available_instances.json\" del \"I:\\ai-computer\\ai-computer\\bin\\Debug\\net9.0\\Services\\available_instances.json\")",
+      "Bash(del \"I:\\ai-computer\\ai-computer\\Views\\ChatWindowsView.axaml\")",
+      "Bash(del \"I:\\ai-computer\\ai-computer\\Views\\ChatWindowsView.axaml.cs\")",
+      "Bash(del \"I:\\ai-computer\\ai-computer\\ViewModels\\ChatWindowsViewModel.cs\")",
+      "Read(//i/ai-computer/**)"
     ],
     "deny": [],
     "ask": []

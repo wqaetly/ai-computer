@@ -334,7 +334,7 @@ private void NavigateToSettings()
 - [Avalonia GitHub](https://github.com/AvaloniaUI/Avalonia)
 - [CommunityToolkit.Mvvm 文档](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)
 - [Fluent Design System](https://www.microsoft.com/design/fluent/)
-- [SukiUI GitHub](https://github.com/kikipoulet/SukiUI)
+- SukiUI文档本地路径: ../SukiUI/docs
 - **SukiUI 官方示例**: `../SukiUI` 目录（开发时的主要参考）
 
 ## 注意事项

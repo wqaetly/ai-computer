@@ -5,19 +5,64 @@
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+                 xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                  mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
                  x:Class="AiComputer.Views.MainWindow"
                  x:DataType="vm:MainWindowViewModel"
                  Icon="/Assets/avalonia-logo.ico"
                  Title="AI Computer - DeepSeek 智能助手"
-                 Width="1000" Height="750"
-                 BackgroundStyle="Gradient">
+                 Width="1200" Height="800"
+                 BackgroundStyle="Gradient"
+                 IsMenuVisible="False">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <!-- 直接嵌入 AiChatView -->
-    <views:AiChatView DataContext="{Binding AiChatViewModel}" />
+    <!-- 使用 SukiSideMenu 作为主布局 -->
+    <suki:SukiSideMenu ItemsSource="{Binding Pages}"
+                       SelectedItem="{Binding ActivePage, Mode=TwoWay}">
+        <!-- 定义侧边栏菜单项的显示方式 -->
+        <suki:SukiSideMenu.ItemTemplate>
+            <DataTemplate DataType="vm:PageBase">
+                <suki:SukiSideMenuItem Classes="Compact"
+                                       Header="{Binding DisplayName}">
+                    <suki:SukiSideMenuItem.Icon>
+                        <avalonia:MaterialIcon Kind="{Binding Icon}" />
+                    </suki:SukiSideMenuItem.Icon>
+                    <!-- 设置页面内容 -->
+                    <suki:SukiSideMenuItem.PageContent>
+                        <ContentControl Content="{Binding}">
+                            <ContentControl.DataTemplates>
+                                <DataTemplate DataType="vm:AiChatViewModel">
+                                    <views:AiChatView />
+                                </DataTemplate>
+                                <DataTemplate DataType="vm:InstanceTestViewModel">
+                                    <views:InstanceTestView />
+                                </DataTemplate>
+                            </ContentControl.DataTemplates>
+                        </ContentControl>
+                    </suki:SukiSideMenuItem.PageContent>
+                </suki:SukiSideMenuItem>
+            </DataTemplate>
+        </suki:SukiSideMenu.ItemTemplate>
+
+        <!-- 侧边栏头部 -->
+        <suki:SukiSideMenu.HeaderContent>
+            <TextBlock Text="⚙️"
+                       FontSize="32"
+                       Margin="0,20,0,20"
+                       HorizontalAlignment="Center" />
+        </suki:SukiSideMenu.HeaderContent>
+
+        <!-- 侧边栏底部 -->
+        <suki:SukiSideMenu.FooterContent>
+            <TextBlock Text="🤖"
+                       FontSize="20"
+                       Margin="0,0,0,15"
+                       HorizontalAlignment="Center"
+                       Opacity="0.5" />
+        </suki:SukiSideMenu.FooterContent>
+    </suki:SukiSideMenu>
 
 </suki:SukiWindow>
