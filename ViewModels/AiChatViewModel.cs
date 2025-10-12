@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using ai_computer.Services;
 using AiComputer.Models;
 using AiComputer.Services;
 using AiComputer.Services.Tools;
@@ -22,6 +24,7 @@ public partial class AiChatViewModel : PageBase
 {
     private readonly DeepSeekService _deepSeekService;
     private readonly HybridSearchService _searchService;
+    private readonly JDRecommendToolHelper _jdRecommendHelper;
     private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>
@@ -76,6 +79,12 @@ public partial class AiChatViewModel : PageBase
         // 初始化搜索服务（使用混合搜索，优先浏览器，降级到 SearxNG）
         _searchService = new HybridSearchService();
 
+        // 初始化京东联盟推荐服务
+        var httpClient = new HttpClient();
+        var jdUnionService = new JDUnionService(httpClient);
+        var jdRecommendService = new JDGoodsRecommendService(jdUnionService);
+        _jdRecommendHelper = new JDRecommendToolHelper(jdRecommendService);
+
         // 注册工具
         RegisterTools();
 
@@ -94,8 +103,14 @@ public partial class AiChatViewModel : PageBase
             var searchResults = await _searchService.SearchAsync(query, 5, CancellationToken.None);
             return SearchResultFormatter.FormatSearchResults(searchResults);
         });
-
         _deepSeekService.RegisterTool(webSearchTool);
+
+        // 注册京东商品推荐工具
+        var jdProductTool = new JDProductRecommendTool(async (keyword, minPrice, maxPrice, count) =>
+        {
+            return await _jdRecommendHelper.RecommendAndFormatAsync(keyword, minPrice, maxPrice, count);
+        });
+        _deepSeekService.RegisterTool(jdProductTool);
     }
 
     /// <summary>
@@ -285,21 +300,50 @@ public partial class AiChatViewModel : PageBase
                     },
                     (toolName, toolArgs) =>
                     {
-                        // 工具调用回调 - 累积搜索查询，只创建一个搜索气泡
+                        // 工具调用回调 - 根据不同工具提取参数并显示状态
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            var query = System.Text.Json.JsonDocument.Parse(toolArgs).RootElement.GetProperty("query").GetString();
-                            searchQueries.Add(query ?? "");
+                            string displayText;
+                            string icon;
 
-                            Console.WriteLine($"[UI] Tool called: {toolName}, query: {query}");
+                            // 解析工具参数
+                            var argsDoc = System.Text.Json.JsonDocument.Parse(toolArgs);
+                            var argsRoot = argsDoc.RootElement;
 
-                            // 如果还没有搜索气泡，创建一个
+                            // 根据工具类型提取不同的参数
+                            if (toolName == "web_search")
+                            {
+                                var query = argsRoot.GetProperty("query").GetString() ?? "";
+                                searchQueries.Add(query);
+                                displayText = $"正在搜索: {query}";
+                                icon = "🔍";
+                                Console.WriteLine($"[UI] Tool called: web_search, query: {query}");
+                            }
+                            else if (toolName == "recommend_jd_product")
+                            {
+                                var keyword = argsRoot.GetProperty("keyword").GetString() ?? "";
+                                var count = argsRoot.TryGetProperty("count", out var countProp) ? countProp.GetInt32() : 3;
+                                searchQueries.Add(keyword);
+                                displayText = $"正在推荐商品: {keyword} (数量: {count})";
+                                icon = "🛒";
+                                Console.WriteLine($"[UI] Tool called: recommend_jd_product, keyword: {keyword}, count: {count}");
+                            }
+                            else
+                            {
+                                // 未知工具
+                                searchQueries.Add(toolName);
+                                displayText = $"正在执行工具: {toolName}";
+                                icon = "⚙️";
+                                Console.WriteLine($"[UI] Tool called: {toolName}");
+                            }
+
+                            // 如果还没有工具气泡，创建一个
                             if (searchBubble == null)
                             {
                                 searchBubble = new ChatMessage
                                 {
                                     Role = MessageRole.Assistant,
-                                    Content = $"🔍 正在搜索: {query}",
+                                    Content = $"{icon} {displayText}",
                                     IsStreaming = false,
                                     Status = AiMessageStatus.Searching,
                                     Timestamp = DateTime.Now,
@@ -310,33 +354,51 @@ public partial class AiChatViewModel : PageBase
                             }
                             else
                             {
-                                // 更新已有搜索气泡的内容，显示所有搜索查询
-                                var searchText = searchQueries.Count == 1
-                                    ? $"🔍 正在搜索: {searchQueries[0]}"
-                                    : $"🔍 正在搜索 {searchQueries.Count} 个问题:\n" +
+                                // 更新已有工具气泡的内容，显示所有工具调用
+                                var toolText = searchQueries.Count == 1
+                                    ? $"{icon} {displayText}"
+                                    : $"{icon} 正在执行 {searchQueries.Count} 个工具:\n" +
                                       string.Join("\n", searchQueries.Select((q, i) => $"  {i + 1}. {q}"));
 
-                                searchBubble.Content = searchText;
+                                searchBubble.Content = toolText;
                                 searchBubble.ContentBuilder.Clear();
-                                searchBubble.ContentBuilder.Append(searchText);
+                                searchBubble.ContentBuilder.Append(toolText);
                             }
 
                         }).Wait();
                     },
                     toolResults =>
                     {
-                        // 工具完成回调 - 更新搜索气泡状态和内容
+                        // 工具完成回调 - 更新工具气泡状态和内容
                         Dispatcher.UIThread.Post(() =>
                         {
                             if (searchBubble != null)
                             {
-                                Console.WriteLine($"[UI] Tools completed, searched {searchQueries.Count} queries");
+                                Console.WriteLine($"[UI] Tools completed: {searchBubble.ToolName}");
 
                                 // 更新状态
                                 searchBubble.Status = AiMessageStatus.SearchCompleted;
 
-                                // 格式化搜索结果
-                                var formattedResults = FormatToolResultsForUser(toolResults);
+                                // 根据工具类型格式化结果
+                                string formattedResults;
+                                if (searchBubble.ToolName == "recommend_jd_product")
+                                {
+                                    // 京东商品推荐结果已经格式化好，直接使用
+                                    formattedResults = ExtractToolResult(toolResults);
+                                    Console.WriteLine($"[UI] JD product recommendation completed");
+                                }
+                                else if (searchBubble.ToolName == "web_search")
+                                {
+                                    // 网络搜索结果需要格式化
+                                    formattedResults = FormatToolResultsForUser(toolResults);
+                                    Console.WriteLine($"[UI] Web search completed");
+                                }
+                                else
+                                {
+                                    // 其他工具，提取原始结果
+                                    formattedResults = ExtractToolResult(toolResults);
+                                }
+
                                 searchBubble.Content = formattedResults;
                                 searchBubble.ContentBuilder.Clear();
                                 searchBubble.ContentBuilder.Append(formattedResults);
@@ -432,6 +494,46 @@ public partial class AiChatViewModel : PageBase
         {
             message.IsSearchResultExpanded = !message.IsSearchResultExpanded;
         }
+    }
+
+    /// <summary>
+    /// 从XML格式的工具结果中提取实际内容
+    /// </summary>
+    private string ExtractToolResult(string toolResults)
+    {
+        var lines = toolResults.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var resultContent = new System.Text.StringBuilder();
+        var inResult = false;
+
+        foreach (var line in lines)
+        {
+            var trimmedLine = line.Trim();
+
+            if (trimmedLine.StartsWith("<result>"))
+            {
+                inResult = true;
+                var content = trimmedLine.Replace("<result>", "").Replace("</result>", "").Trim();
+                if (!string.IsNullOrEmpty(content))
+                {
+                    resultContent.AppendLine(content);
+                }
+            }
+            else if (trimmedLine.EndsWith("</result>"))
+            {
+                inResult = false;
+                var content = trimmedLine.Replace("</result>", "").Trim();
+                if (!string.IsNullOrEmpty(content))
+                {
+                    resultContent.AppendLine(content);
+                }
+            }
+            else if (inResult && !trimmedLine.StartsWith("<"))
+            {
+                resultContent.AppendLine(trimmedLine);
+            }
+        }
+
+        return resultContent.ToString().TrimEnd();
     }
 
     /// <summary>

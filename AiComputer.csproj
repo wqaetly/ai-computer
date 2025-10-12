@@ -49,6 +49,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include=".claude\jd-guanjiancichaxun.md" />
+    <Content Include=".claude\jd-tiuguang.md" />
     <Content Include=".claude\searXNGInstance.json" />
   </ItemGroup>
 </Project>
