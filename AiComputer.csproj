@@ -6,6 +6,8 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- 禁用 CET (Control-flow Enforcement Technology) 以避免在旧版 Windows 10 上崩溃 -->
+    <CETCompat>false</CETCompat>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,13 +17,16 @@
 
   <ItemGroup>
     <!-- 复制 Services 文件到输出目录 -->
-    <None Update="Services\instances.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Services\available_instances.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include=".claude\DEEPSEEK_INTEGRATION.md" />
+
+    <!-- 复制 Chrome 浏览器文件到输出目录 -->
+    <None Include="Assets\chrome-win64\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Assets\chrome-win64\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -37,8 +42,13 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
     <PackageReference Include="IconPacks.Avalonia" Version="1.2.0" />
     <PackageReference Include="LiveMarkdown.Avalonia" Version="1.3.5" />
+    <PackageReference Include="PuppeteerSharp" Version="20.2.4" />
     <PackageReference Include="SukiUI" Version="6.0.4-nightly20250930" />
     <PackageReference Include="SukiUI.Dock" Version="6.0.4-nightly20250930" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include=".claude\searXNGInstance.json" />
   </ItemGroup>
 </Project>

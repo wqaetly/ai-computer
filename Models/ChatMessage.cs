@@ -51,6 +51,11 @@ public enum AiMessageStatus
     Searching,
 
     /// <summary>
+    /// 联网搜索完毕
+    /// </summary>
+    SearchCompleted,
+
+    /// <summary>
     /// 输出中
     /// </summary>
     Generating,
@@ -137,6 +142,12 @@ public partial class ChatMessage : ObservableObject
     private bool _isReasoningExpanded;
 
     /// <summary>
+    /// 搜索结果是否展开
+    /// </summary>
+    [ObservableProperty]
+    private bool _isSearchResultExpanded = true;
+
+    /// <summary>
     /// AI 消息状态
     /// </summary>
     [ObservableProperty]
@@ -160,6 +171,11 @@ public partial class ChatMessage : ObservableObject
     public bool IsAssistant => Role == MessageRole.Assistant;
 
     /// <summary>
+    /// 是否为搜索结果消息
+    /// </summary>
+    public bool IsSearchResult => !string.IsNullOrEmpty(ToolName) && ToolName == "web_search";
+
+    /// <summary>
     /// 状态文本
     /// </summary>
     public string StatusText => Status switch
@@ -167,6 +183,7 @@ public partial class ChatMessage : ObservableObject
         AiMessageStatus.Waiting => "等待响应中...",
         AiMessageStatus.Thinking => "思考中...",
         AiMessageStatus.Searching => "联网搜索中...",
+        AiMessageStatus.SearchCompleted => "联网搜索完毕",
         AiMessageStatus.Generating => "输出中...",
         AiMessageStatus.Completed => "已完成",
         AiMessageStatus.Cancelled => "已取消",

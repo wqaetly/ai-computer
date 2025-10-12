@@ -1,0 +1,420 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:AiComputer.ViewModels"
+             xmlns:services="using:AiComputer.Services"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="AiComputer.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <Design.DataContext>
+        <vm:SettingsViewModel />
+    </Design.DataContext>
+
+    <!-- 主布局：类别列表 + 设置详情 -->
+    <Grid ColumnDefinitions="Auto,*">
+
+        <!-- 左侧：设置类别列表 -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource SukiBackground}"
+                BorderBrush="{DynamicResource SukiBorderBrush}"
+                BorderThickness="0,0,1,0"
+                Width="260">
+            <Grid RowDefinitions="Auto,*">
+
+                <!-- 类别列表头部 -->
+                <Border Grid.Row="0"
+                        Background="{DynamicResource SukiCardBackground}"
+                        BorderBrush="{DynamicResource SukiBorderBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="12,10">
+                    <TextBlock Text="设置类别"
+                               FontSize="13"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center" />
+                </Border>
+
+                <!-- 类别列表 -->
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding Categories}"
+                         SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                         Background="Transparent"
+                         SelectionMode="Single"
+                         Padding="8">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Padding" Value="10,8" />
+                            <Setter Property="Margin" Value="0,0,0,2" />
+                            <Setter Property="CornerRadius" Value="6" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Setter Property="BorderBrush" Value="Transparent" />
+                        </Style>
+                        <!-- 隐藏默认的勾选标记 -->
+                        <Style Selector="ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                        <!-- 隐藏所有可能的勾选标记元素 -->
+                        <Style Selector="ListBoxItem /template/ PathIcon">
+                            <Setter Property="IsVisible" Value="False" />
+                        </Style>
+                        <Style Selector="ListBoxItem /template/ Border#SelectionIndicator">
+                            <Setter Property="IsVisible" Value="False" />
+                        </Style>
+                        <Style Selector="ListBoxItem /template/ Border#PART_SelectedBorder">
+                            <Setter Property="IsVisible" Value="False" />
+                        </Style>
+                        <Style Selector="ListBoxItem /template/ Viewbox">
+                            <Setter Property="IsVisible" Value="False" />
+                        </Style>
+                        <!-- 悬停状态 -->
+                        <Style Selector="ListBoxItem:pointerover">
+                            <Setter Property="Background" Value="{DynamicResource SukiCardBackground}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource SukiBorderBrush}" />
+                        </Style>
+                        <!-- 选中状态 - 使用边框和背景色表示 -->
+                        <Style Selector="ListBoxItem:selected">
+                            <Setter Property="Background" Value="{DynamicResource SukiCardBackground}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource SukiPrimaryColor}" />
+                        </Style>
+                        <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                        <!-- 图标默认状态 -->
+                        <Style Selector="ListBoxItem iconPacks|PackIconMaterial">
+                            <Setter Property="Foreground" Value="{DynamicResource SukiText}" />
+                            <Setter Property="Opacity" Value="0.7" />
+                        </Style>
+                        <!-- 图标悬停状态 -->
+                        <Style Selector="ListBoxItem:pointerover iconPacks|PackIconMaterial">
+                            <Setter Property="Foreground" Value="{DynamicResource SukiPrimaryColor}" />
+                            <Setter Property="Opacity" Value="1" />
+                        </Style>
+                        <!-- 图标选中状态 -->
+                        <Style Selector="ListBoxItem:selected iconPacks|PackIconMaterial">
+                            <Setter Property="Foreground" Value="{DynamicResource SukiPrimaryColor}" />
+                            <Setter Property="Opacity" Value="1" />
+                        </Style>
+                        <!-- 文字默认状态 -->
+                        <Style Selector="ListBoxItem TextBlock">
+                            <Setter Property="Foreground" Value="{DynamicResource SukiText}" />
+                            <Setter Property="Opacity" Value="0.8" />
+                        </Style>
+                        <!-- 文字悬停状态 -->
+                        <Style Selector="ListBoxItem:pointerover TextBlock">
+                            <Setter Property="Foreground" Value="{DynamicResource SukiText}" />
+                            <Setter Property="Opacity" Value="1" />
+                        </Style>
+                        <!-- 文字选中状态 -->
+                        <Style Selector="ListBoxItem:selected TextBlock">
+                            <Setter Property="Foreground" Value="{DynamicResource SukiText}" />
+                            <Setter Property="Opacity" Value="1" />
+                            <Setter Property="FontWeight" Value="Medium" />
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="vm:SettingCategory">
+                            <!-- 简化为单层布局 -->
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <iconPacks:PackIconMaterial Kind="{Binding Icon}"
+                                                            Width="18"
+                                                            Height="18"
+                                                            VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}"
+                                           FontSize="13"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <!-- 右侧：设置详情内容 -->
+        <ScrollViewer Grid.Column="1" Padding="30,20">
+            <StackPanel Spacing="20" HorizontalAlignment="Stretch">
+
+                <!-- 标题和描述 -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding SelectedCategory.Name, FallbackValue='设置'}"
+                               FontSize="24"
+                               FontWeight="Bold" />
+                    <TextBlock Text="{Binding SelectedCategory.Description, FallbackValue=''}"
+                               FontSize="13"
+                               Opacity="0.7"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!-- 分隔线 -->
+                <Separator />
+
+                <!-- 联网搜索设置 -->
+                <suki:GlassCard>
+                    <StackPanel Spacing="15">
+                        <!-- 设置项标题 -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="搜索服务提供商"
+                                       FontSize="15"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="选择AI对话时使用的网络搜索服务"
+                                       FontSize="12"
+                                       Opacity="0.7"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <!-- 搜索服务商选择 -->
+                        <ComboBox ItemsSource="{Binding AvailableSearchProviders}"
+                                  SelectedItem="{Binding SelectedSearchProviderItem, Mode=TwoWay}"
+                                  HorizontalAlignment="Stretch"
+                                  MinWidth="300">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate DataType="vm:SearchProviderItem">
+                                    <StackPanel Spacing="4" Margin="0,5">
+                                        <TextBlock Text="{Binding DisplayName}"
+                                                   FontSize="13"
+                                                   FontWeight="Medium" />
+                                        <TextBlock Text="{Binding Description}"
+                                                   FontSize="11"
+                                                   Opacity="0.7"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <!-- 说明文本 -->
+                        <Border Background="{DynamicResource SukiCardBackground}"
+                                BorderBrush="{DynamicResource SukiBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="12">
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <iconPacks:PackIconMaterial Kind="InformationOutline"
+                                                                Width="16"
+                                                                Height="16"
+                                                                VerticalAlignment="Top"
+                                                                Margin="0,2,0,0"
+                                                                Foreground="{DynamicResource SukiPrimaryColor}" />
+                                    <TextBlock Text="服务说明"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource SukiPrimaryColor}" />
+                                </StackPanel>
+                                <TextBlock FontSize="11" Opacity="0.8" TextWrapping="Wrap">
+                                    <Run Text="• " />
+                                    <Run Text="SearxNG:" FontWeight="Bold" />
+                                    <Run Text=" 无需额外配置，开箱即用" />
+                                    <LineBreak />
+                                    <Run Text="• " />
+                                    <Run Text="谷歌/必应/百度:" FontWeight="Bold" />
+                                    <Run Text=" 需要下载浏览器驱动，首次使用会自动下载" />
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </suki:GlassCard>
+
+                <!-- SearxNG 实例测试区域 (仅在选择 SearxNG 时显示) -->
+                <suki:GlassCard IsVisible="{Binding IsSearxNG}">
+                    <StackPanel Spacing="15">
+                        <!-- 标题和说明 -->
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="SearxNG 实例测试"
+                                       FontSize="15"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="从 searx.space/data/instances.json 获取实例列表并测试可用性"
+                                       FontSize="12"
+                                       Opacity="0.7"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <!-- 统计信息 -->
+                        <Grid ColumnDefinitions="*,*,*,*">
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center" Spacing="4">
+                                <TextBlock Text="总数"
+                                           FontSize="12"
+                                           Opacity="0.6"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding TotalCount}"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="4">
+                                <TextBlock Text="可用"
+                                           FontSize="12"
+                                           Opacity="0.6"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding AvailableCount}"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource SukiGreen}"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Center" Spacing="4">
+                                <TextBlock Text="不可用"
+                                           FontSize="12"
+                                           Opacity="0.6"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding UnavailableCount}"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource SukiPrimaryColor}"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3" HorizontalAlignment="Center" Spacing="4">
+                                <TextBlock Text="超时"
+                                           FontSize="12"
+                                           Opacity="0.6"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding TimeoutCount}"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           Foreground="#FFA500"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- 进度消息 -->
+                        <Border Background="{DynamicResource SukiCardBackground}"
+                                BorderBrush="{DynamicResource SukiBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="12">
+                            <TextBlock Text="{Binding ProgressMessage}"
+                                       TextWrapping="Wrap"
+                                       FontSize="12" />
+                        </Border>
+
+                        <!-- 按钮组 -->
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button Command="{Binding StartTestCommand}"
+                                    Classes="Accent">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <iconPacks:PackIconMaterial Kind="{Binding TestButtonIcon}"
+                                                                Width="16"
+                                                                Height="16"
+                                                                VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding TestButtonText}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding ReloadInstancesCommand}"
+                                    IsEnabled="{Binding !IsTesting}"
+                                    Classes="Accent">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <iconPacks:PackIconMaterial Kind="Refresh"
+                                                                Width="16"
+                                                                Height="16"
+                                                                VerticalAlignment="Center" />
+                                    <TextBlock Text="重新加载"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- 实例列表 -->
+                        <Border MaxHeight="400">
+                            <ScrollViewer>
+                                <ItemsControl ItemsSource="{Binding Instances}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="services:InstanceInfo">
+                                            <Border Background="{DynamicResource SukiCardBackground}"
+                                                    BorderBrush="{DynamicResource SukiBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6"
+                                                    Padding="12"
+                                                    Margin="0,0,0,8">
+                                                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                                    <!-- 状态图标 -->
+                                                    <iconPacks:PackIconMaterial Grid.Column="0"
+                                                                                Width="20"
+                                                                                Height="20"
+                                                                                VerticalAlignment="Center"
+                                                                                Margin="0,0,10,0">
+                                                        <iconPacks:PackIconMaterial.Styles>
+                                                            <Style Selector="iconPacks|PackIconMaterial">
+                                                                <Setter Property="Kind" Value="HelpCircle" />
+                                                                <Setter Property="Foreground" Value="{DynamicResource SukiLowText}" />
+                                                            </Style>
+                                                            <Style Selector="iconPacks|PackIconMaterial[Tag=Available]">
+                                                                <Setter Property="Kind" Value="CheckCircle" />
+                                                                <Setter Property="Foreground" Value="{DynamicResource SukiGreen}" />
+                                                            </Style>
+                                                            <Style Selector="iconPacks|PackIconMaterial[Tag=Unavailable]">
+                                                                <Setter Property="Kind" Value="CloseCircle" />
+                                                                <Setter Property="Foreground" Value="{DynamicResource SukiPrimaryColor}" />
+                                                            </Style>
+                                                            <Style Selector="iconPacks|PackIconMaterial[Tag=Timeout]">
+                                                                <Setter Property="Kind" Value="ClockAlert" />
+                                                                <Setter Property="Foreground" Value="#FFA500" />
+                                                            </Style>
+                                                        </iconPacks:PackIconMaterial.Styles>
+                                                        <iconPacks:PackIconMaterial.Tag>
+                                                            <Binding Path="Status" />
+                                                        </iconPacks:PackIconMaterial.Tag>
+                                                    </iconPacks:PackIconMaterial>
+
+                                                    <!-- URL 和错误信息 -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                                        <TextBlock Text="{Binding Url}"
+                                                                   FontSize="12"
+                                                                   FontWeight="Medium" />
+                                                        <TextBlock Text="{Binding ErrorMessage}"
+                                                                   FontSize="10"
+                                                                   Opacity="0.6"
+                                                                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                    </StackPanel>
+
+                                                    <!-- 响应时间 -->
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding ResponseTime, StringFormat='{}{0}ms'}"
+                                                               FontSize="11"
+                                                               Opacity="0.7"
+                                                               VerticalAlignment="Center"
+                                                               Margin="12,0"
+                                                               IsVisible="{Binding !!ResponseTime}" />
+
+                                                    <!-- 状态文本 -->
+                                                    <TextBlock Grid.Column="3"
+                                                               Text="{Binding Status}"
+                                                               FontSize="11"
+                                                               FontWeight="Medium"
+                                                               VerticalAlignment="Center">
+                                                        <TextBlock.Styles>
+                                                            <Style Selector="TextBlock">
+                                                                <Setter Property="Foreground" Value="{DynamicResource SukiLowText}" />
+                                                            </Style>
+                                                            <Style Selector="TextBlock[Text=Available]">
+                                                                <Setter Property="Foreground" Value="{DynamicResource SukiGreen}" />
+                                                            </Style>
+                                                            <Style Selector="TextBlock[Text=Unavailable]">
+                                                                <Setter Property="Foreground" Value="{DynamicResource SukiPrimaryColor}" />
+                                                            </Style>
+                                                            <Style Selector="TextBlock[Text=Timeout]">
+                                                                <Setter Property="Foreground" Value="#FFA500" />
+                                                            </Style>
+                                                        </TextBlock.Styles>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                    </StackPanel>
+                </suki:GlassCard>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

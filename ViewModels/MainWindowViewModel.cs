@@ -51,7 +51,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Pages = new ObservableCollection<PageBase>
         {
             new AiChatViewModel(),
-            new InstanceTestViewModel()
+            new SettingsViewModel()
         };
 
         // 默认选中第一个页面（AI 聊天）

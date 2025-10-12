@@ -13,13 +13,31 @@ namespace AiComputer.Services;
 /// <summary>
 /// 网络搜索服务 - 使用公共 SearxNG 实例
 /// </summary>
-public class SearchService
+public class SearxngSearchService : ISearchService
 {
     private readonly HttpClient _httpClient;
     private readonly InstanceTestService _instanceTestService;
     private const string Version = "1.0.0";
     private const string AvailableInstancesJsonPath = "Services/available_instances.json";
     private const int MaxRetries = 3;
+
+    public string ServiceName => "SearxNG Search";
+
+    /// <summary>
+    /// 检查服务是否可用
+    /// </summary>
+    public Task<bool> IsAvailableAsync()
+    {
+        try
+        {
+            var instances = LoadAvailableInstances();
+            return Task.FromResult(instances.Count > 0);
+        }
+        catch
+        {
+            return Task.FromResult(false);
+        }
+    }
 
     /// <summary>
     /// 浏览器类型枚举
@@ -116,7 +134,7 @@ public class SearchService
     /// <summary>
     /// 构造函数
     /// </summary>
-    public SearchService()
+    public SearxngSearchService()
     {
         _instanceTestService = new InstanceTestService();
 
@@ -293,7 +311,7 @@ public class SearchService
 
         if (availableInstances.Count == 0)
         {
-            Console.WriteLine("⚠ 没有可用的搜索实例");
+            Console.WriteLine("⚠ 没有可用的搜索实例，请前往【联网搜索测试】页面重新获取并测试实例");
             return new List<SearchResult>();
         }
 
@@ -338,6 +356,7 @@ public class SearchService
 
         // 所有尝试都失败，返回空结果
         Console.WriteLine($"⚠ 已尝试 {MaxRetries} 次，所有搜索实例都未能返回结果");
+        Console.WriteLine("💡 建议：请前往【联网搜索测试】页面，点击重新加载按钮从 searx.space 获取最新实例列表并进行测试");
         return new List<SearchResult>();
     }
 
@@ -517,26 +536,6 @@ public class SearchService
         return results;
     }
 
-    /// <summary>
-    /// 格式化搜索结果为文本（用于传递给 AI）
-    /// </summary>
-    public static string FormatSearchResults(List<SearchResult> results)
-    {
-        if (results.Count == 0)
-            return "未找到相关搜索结果。";
-
-        var formatted = "搜索结果:\n\n";
-        for (int i = 0; i < results.Count; i++)
-        {
-            var result = results[i];
-            formatted += $"{i + 1}. **{result.Title}**\n";
-            formatted += $"   来源: {result.Source}\n";
-            formatted += $"   链接: {result.Url}\n";
-            formatted += $"   摘要: {result.Snippet}\n\n";
-        }
-
-        return formatted;
-    }
 }
 
 #region 搜索结果模型
@@ -565,6 +564,33 @@ public class SearchResult
     /// 来源网站
     /// </summary>
     public string Source { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// 搜索结果格式化工具
+/// </summary>
+public static class SearchResultFormatter
+{
+    /// <summary>
+    /// 格式化搜索结果为文本（用于传递给 AI）
+    /// </summary>
+    public static string FormatSearchResults(List<SearchResult> results)
+    {
+        if (results.Count == 0)
+            return "未找到相关搜索结果。";
+
+        var formatted = "搜索结果:\n\n";
+        for (int i = 0; i < results.Count; i++)
+        {
+            var result = results[i];
+            formatted += $"{i + 1}. **{result.Title}**\n";
+            formatted += $"   来源: {result.Source}\n";
+            formatted += $"   链接: {result.Url}\n";
+            formatted += $"   摘要: {result.Snippet}\n\n";
+        }
+
+        return formatted;
+    }
 }
 
 #endregion

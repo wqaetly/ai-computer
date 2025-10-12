@@ -1,0 +1,7 @@
+{
+  "configProperties": {
+    "System.Runtime.InteropServices.EnableCETShadowStacks": false,
+    "Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.OverrideArchitecture": "",
+    "DOTNET_EnableWriteXorExecute": 0
+  }
+}

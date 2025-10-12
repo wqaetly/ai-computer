@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AiComputer.Models;
 using AiComputer.Services;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -13,15 +15,61 @@ using IconPacks.Avalonia.Material;
 namespace AiComputer.ViewModels;
 
 /// <summary>
-/// 实例测试页面 ViewModel
+/// 设置页面 ViewModel
 /// </summary>
-public partial class InstanceTestViewModel : PageBase
+public partial class SettingsViewModel : PageBase
 {
+    private readonly AppSettingsService _appSettings;
     private readonly InstanceTestService _testService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>
-    /// 实例列表
+    /// 设置类别列表
+    /// </summary>
+    public ObservableCollection<SettingCategory> Categories { get; }
+
+    /// <summary>
+    /// 当前选中的设置类别
+    /// </summary>
+    [ObservableProperty]
+    private SettingCategory? _selectedCategory;
+
+    /// <summary>
+    /// 所有可用的搜索服务商列表
+    /// </summary>
+    public List<SearchProviderItem> AvailableSearchProviders { get; }
+
+    /// <summary>
+    /// 当前选中的搜索服务商项
+    /// </summary>
+    public SearchProviderItem? SelectedSearchProviderItem
+    {
+        get => AvailableSearchProviders.FirstOrDefault(p => p.Provider == _appSettings.SearchProvider);
+        set
+        {
+            if (value != null && _appSettings.SearchProvider != value.Provider)
+            {
+                _appSettings.SearchProvider = value.Provider;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsSearxNG));
+                Console.WriteLine($"[Settings] 搜索服务商已更改为: {value.Provider}");
+
+                // 如果切换到 SearxNG，自动加载实例列表
+                if (value.Provider == SearchProvider.SearxNG && Instances.Count == 0)
+                {
+                    _ = LoadInstancesFromApiAsync();
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 是否选择了 SearxNG 搜索提供商（用于条件显示测试区域）
+    /// </summary>
+    public bool IsSearxNG => _appSettings.SearchProvider == SearchProvider.SearxNG;
+
+    /// <summary>
+    /// SearxNG 实例列表
     /// </summary>
     public ObservableCollection<InstanceInfo> Instances { get; } = new();
 
@@ -35,7 +83,7 @@ public partial class InstanceTestViewModel : PageBase
     /// 测试进度消息
     /// </summary>
     [ObservableProperty]
-    private string _progressMessage = "初始化中，正在从 searx.space 获取 SearxNG 实例列表...";
+    private string _progressMessage = "点击\"加载实例\"按钮从 searx.space 获取 SearxNG 实例列表";
 
     /// <summary>
     /// 可用实例数量
@@ -73,10 +121,68 @@ public partial class InstanceTestViewModel : PageBase
     [ObservableProperty]
     private PackIconMaterialKind _testButtonIcon = PackIconMaterialKind.Play;
 
-    public InstanceTestViewModel() : base("联网搜索测试", PackIconMaterialKind.Web, 1)
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    public SettingsViewModel() : base("设置", PackIconMaterialKind.Cog, 99)
     {
+        _appSettings = AppSettingsService.Instance;
         _testService = new InstanceTestService();
-        _ = LoadInstancesFromApiAsync(); // 异步加载实例
+
+        // 监听配置服务的属性变更，同步到UI
+        _appSettings.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(AppSettingsService.SearchProvider))
+            {
+                OnPropertyChanged(nameof(SelectedSearchProviderItem));
+                OnPropertyChanged(nameof(IsSearxNG));
+            }
+        };
+
+        // 初始化搜索服务商列表
+        AvailableSearchProviders = new List<SearchProviderItem>
+        {
+            new SearchProviderItem
+            {
+                Provider = SearchProvider.Baidu,
+                DisplayName = "百度",
+                Description = "国内最流行的搜索引擎"
+            },
+            new SearchProviderItem
+            {
+                Provider = SearchProvider.Bing,
+                DisplayName = "必应",
+                Description = "微软的搜索引擎"
+            },
+            new SearchProviderItem
+            {
+                Provider = SearchProvider.SearxNG,
+                DisplayName = "SearxNG",
+                Description = "隐私友好的元搜索引擎，聚合多个搜索源"
+            },
+        };
+
+        // 初始化设置类别列表
+        Categories = new ObservableCollection<SettingCategory>
+        {
+            new SettingCategory
+            {
+                Id = "search",
+                Name = "联网搜索",
+                Icon = PackIconMaterialKind.CloudSearch,
+                Description = "配置AI对话时使用的搜索服务"
+            }
+            // 未来可以添加更多设置类别
+        };
+
+        // 默认选中第一个类别
+        SelectedCategory = Categories.FirstOrDefault();
+
+        // 如果当前选择的是 SearxNG，自动加载实例列表
+        if (IsSearxNG)
+        {
+            _ = LoadInstancesFromApiAsync();
+        }
     }
 
     /// <summary>
@@ -223,4 +329,51 @@ public partial class InstanceTestViewModel : PageBase
         Instances.Clear();
         await LoadInstancesFromApiAsync();
     }
+}
+
+/// <summary>
+/// 设置类别模型
+/// </summary>
+public class SettingCategory
+{
+    /// <summary>
+    /// 类别ID
+    /// </summary>
+    public string Id { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 类别名称
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 图标
+    /// </summary>
+    public PackIconMaterialKind Icon { get; set; }
+
+    /// <summary>
+    /// 描述
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// 搜索服务商项（用于UI显示）
+/// </summary>
+public class SearchProviderItem
+{
+    /// <summary>
+    /// 服务商枚举值
+    /// </summary>
+    public SearchProvider Provider { get; set; }
+
+    /// <summary>
+    /// 显示名称
+    /// </summary>
+    public string DisplayName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 描述信息
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
 }

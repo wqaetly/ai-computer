@@ -16,14 +16,15 @@
 
     <Grid RowDefinitions="Auto,*">
         <!-- 顶部控制栏 -->
-        <suki:GlassCard Grid.Row="0" Margin="20">
+        <Border Grid.Row="0" Padding="20">
+        <suki:GlassCard>
             <StackPanel Spacing="15">
                 <!-- 标题和说明 -->
                 <StackPanel Spacing="8">
                     <TextBlock Text="联网搜索实例测试"
                                FontSize="20"
                                FontWeight="Bold" />
-                    <TextBlock Text="测试 instances.yml 中的 SearxNG 实例可用性，并将结果保存到 available_instances.json"
+                    <TextBlock Text="从 searx.space/data/instances.json 获取 SearxNG 实例列表并测试可用性"
                                FontSize="12"
                                Opacity="0.7" />
                 </StackPanel>
@@ -116,6 +117,7 @@
                 </StackPanel>
             </StackPanel>
         </suki:GlassCard>
+        </Border>
 
         <!-- 实例列表 -->
         <ScrollViewer Grid.Row="1" Padding="20,0,20,20">

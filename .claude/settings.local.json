@@ -27,11 +27,21 @@
       "Bash(del \"I:\\ai-computer\\ai-computer\\Views\\ChatWindowsView.axaml.cs\")",
       "Bash(del \"I:\\ai-computer\\ai-computer\\ViewModels\\ChatWindowsViewModel.cs\")",
       "Read(//i/ai-computer/**)",
-      "mcp__mcp-router__sequentialthinking"
+      "mcp__mcp-router__sequentialthinking",
+      "Bash(dotnet --version)",
+      "Bash(D:AIai-computerai-computerrun-dev.bat)",
+      "Read(//d/AI/ai-computer/cherry-studio-main/cherry-studio-main/**)",
+      "Bash(dir:*)",
+      "WebFetch(domain:searx.space)",
+      "Read(//d/AI/ai-computer/**)",
+      "Bash(git lfs:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "mcp-router"
   ]

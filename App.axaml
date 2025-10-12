@@ -4,6 +4,7 @@
              xmlns:local="using:AiComputer"
              xmlns:converters="using:AiComputer.Converters"
              xmlns:suki="clr-namespace:SukiUI;assembly=SukiUI"
+             xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -13,6 +14,7 @@
 
     <Application.Resources>
         <converters:ReasoningButtonConverter x:Key="ReasoningButtonConverter" />
+        <converters:SearchResultButtonConverter x:Key="SearchResultButtonConverter" />
 
         <!-- LiveMarkdown 颜色资源 -->
         <Color x:Key="BorderColor">#3DFFFFFF</Color>
@@ -26,6 +28,30 @@
 
         <!-- IconPacks 样式 -->
         <StyleInclude Source="avares://IconPacks.Avalonia/Icons.axaml" />
+
+        <!-- IconPacks 全局样式修复 -->
+        <Style Selector="iconPacks|PackIconMaterial">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="iconPacks|PackIconMaterial /template/ Border">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="iconPacks|PackIconMaterial /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="iconPacks|PackIconMaterial /template/ Grid">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="iconPacks|PackIconMaterial /template/ Panel">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="iconPacks|PackIconMaterial PathIcon">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="iconPacks|PackIconMaterial Path">
+            <Setter Property="Fill" Value="{Binding $parent[iconPacks:PackIconMaterial].Foreground}" />
+        </Style>
 
         <!-- LiveMarkdown 样式 -->
         <StyleInclude Source="avares://LiveMarkdown.Avalonia/Styles.axaml"/>

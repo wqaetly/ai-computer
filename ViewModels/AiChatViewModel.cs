@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AiComputer.Models;
 using AiComputer.Services;
+using AiComputer.Services.Tools;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -19,7 +21,7 @@ namespace AiComputer.ViewModels;
 public partial class AiChatViewModel : PageBase
 {
     private readonly DeepSeekService _deepSeekService;
-    private readonly SearchService _searchService;
+    private readonly HybridSearchService _searchService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>
@@ -71,11 +73,29 @@ public partial class AiChatViewModel : PageBase
         // 使用提供的 API Key
         _deepSeekService = new DeepSeekService("sk-e8ec7e0c860d4b7d98ffc4212ab2c138");
 
-        // 初始化搜索服务
-        _searchService = new SearchService();
+        // 初始化搜索服务（使用混合搜索，优先浏览器，降级到 SearxNG）
+        _searchService = new HybridSearchService();
+
+        // 注册工具
+        RegisterTools();
 
         // 创建第一个默认会话
         CreateNewSession();
+    }
+
+    /// <summary>
+    /// 注册所有可用工具
+    /// </summary>
+    private void RegisterTools()
+    {
+        // 注册网络搜索工具
+        var webSearchTool = new WebSearchTool(async (query) =>
+        {
+            var searchResults = await _searchService.SearchAsync(query, 5, CancellationToken.None);
+            return SearchResultFormatter.FormatSearchResults(searchResults);
+        });
+
+        _deepSeekService.RegisterTool(webSearchTool);
     }
 
     /// <summary>
@@ -211,6 +231,13 @@ public partial class AiChatViewModel : PageBase
         IsSending = true;
         _cancellationTokenSource = new CancellationTokenSource();
 
+        // 使用数组包装以便在闭包中修改引用（工具调用后会切换到新气泡）
+        var currentMsgHolder = new[] { assistantMsg };
+
+        // 保存搜索气泡引用和搜索查询列表
+        ChatMessage? searchBubble = null;
+        var searchQueries = new List<string>();
+
         try
         {
             // 准备消息历史 - 包含当前用户消息，排除即将添加的助手消息
@@ -228,15 +255,16 @@ public partial class AiChatViewModel : PageBase
                         // 推理内容回调 - 使用 Post 非阻塞更新UI
                         Dispatcher.UIThread.Post(() =>
                         {
+                            var currentMsg = currentMsgHolder[0];
                             // 第一次接收到推理内容时，自动展开并更新状态
-                            if (assistantMsg.ReasoningContentBuilder.Length == 0)
+                            if (currentMsg.ReasoningContentBuilder.Length == 0)
                             {
-                                assistantMsg.IsReasoningExpanded = true;
-                                assistantMsg.Status = AiMessageStatus.Thinking;
+                                currentMsg.IsReasoningExpanded = true;
+                                currentMsg.Status = AiMessageStatus.Thinking;
                             }
                             // 使用 ObservableStringBuilder 的 Append 方法实时更新
-                            assistantMsg.ReasoningContentBuilder.Append(reasoningChunk);
-                            assistantMsg.ReasoningContent += reasoningChunk; // 保持字符串同步用于状态判断
+                            currentMsg.ReasoningContentBuilder.Append(reasoningChunk);
+                            currentMsg.ReasoningContent += reasoningChunk; // 保持字符串同步用于状态判断
                         });
                     },
                     contentChunk =>
@@ -244,32 +272,77 @@ public partial class AiChatViewModel : PageBase
                         // 回答内容回调 - 使用 Post 非阻塞更新UI
                         Dispatcher.UIThread.Post(() =>
                         {
+                            var currentMsg = currentMsgHolder[0];
                             // 第一次接收到回答内容时，更新状态
-                            if (assistantMsg.ContentBuilder.Length == 0)
+                            if (currentMsg.ContentBuilder.Length == 0)
                             {
-                                assistantMsg.Status = AiMessageStatus.Generating;
+                                currentMsg.Status = AiMessageStatus.Generating;
                             }
                             // 使用 ObservableStringBuilder 的 Append 方法实时更新
-                            assistantMsg.ContentBuilder.Append(contentChunk);
-                            assistantMsg.Content += contentChunk; // 保持字符串同步用于状态判断
+                            currentMsg.ContentBuilder.Append(contentChunk);
+                            currentMsg.Content += contentChunk; // 保持字符串同步用于状态判断
                         });
                     },
-                    async (query) =>
+                    (toolName, toolArgs) =>
                     {
-                        // 搜索回调 - 执行联网搜索
-                        // 更新状态为搜索中
-                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        // 工具调用回调 - 累积搜索查询，只创建一个搜索气泡
+                        Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            assistantMsg.Status = AiMessageStatus.Searching;
-                        });
+                            var query = System.Text.Json.JsonDocument.Parse(toolArgs).RootElement.GetProperty("query").GetString();
+                            searchQueries.Add(query ?? "");
 
-                        // 执行搜索
-                        var searchResults = await _searchService.SearchAsync(query, 5, _cancellationTokenSource!.Token);
+                            Console.WriteLine($"[UI] Tool called: {toolName}, query: {query}");
 
-                        // 格式化搜索结果并返回
-                        return SearchService.FormatSearchResults(searchResults);
+                            // 如果还没有搜索气泡，创建一个
+                            if (searchBubble == null)
+                            {
+                                searchBubble = new ChatMessage
+                                {
+                                    Role = MessageRole.Assistant,
+                                    Content = $"🔍 正在搜索: {query}",
+                                    IsStreaming = false,
+                                    Status = AiMessageStatus.Searching,
+                                    Timestamp = DateTime.Now,
+                                    ToolName = toolName,
+                                    ToolArguments = toolArgs
+                                };
+                                CurrentSession.Messages.Add(searchBubble);
+                            }
+                            else
+                            {
+                                // 更新已有搜索气泡的内容，显示所有搜索查询
+                                var searchText = searchQueries.Count == 1
+                                    ? $"🔍 正在搜索: {searchQueries[0]}"
+                                    : $"🔍 正在搜索 {searchQueries.Count} 个问题:\n" +
+                                      string.Join("\n", searchQueries.Select((q, i) => $"  {i + 1}. {q}"));
+
+                                searchBubble.Content = searchText;
+                                searchBubble.ContentBuilder.Clear();
+                                searchBubble.ContentBuilder.Append(searchText);
+                            }
+
+                        }).Wait();
                     },
-                    isSearchFollowUp: false, // 首次请求
+                    toolResults =>
+                    {
+                        // 工具完成回调 - 更新搜索气泡状态和内容
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            if (searchBubble != null)
+                            {
+                                Console.WriteLine($"[UI] Tools completed, searched {searchQueries.Count} queries");
+
+                                // 更新状态
+                                searchBubble.Status = AiMessageStatus.SearchCompleted;
+
+                                // 格式化搜索结果
+                                var formattedResults = FormatToolResultsForUser(toolResults);
+                                searchBubble.Content = formattedResults;
+                                searchBubble.ContentBuilder.Clear();
+                                searchBubble.ContentBuilder.Append(formattedResults);
+                            }
+                        });
+                    },
                     _cancellationTokenSource.Token
                 );
             }, _cancellationTokenSource.Token).ConfigureAwait(false);
@@ -277,9 +350,10 @@ public partial class AiChatViewModel : PageBase
             // 流式传输结束，自动收起思考内容并更新状态
             Dispatcher.UIThread.Post(() =>
             {
-                assistantMsg.IsStreaming = false;
-                assistantMsg.IsReasoningExpanded = false;
-                assistantMsg.Status = AiMessageStatus.Completed;
+                var currentMsg = currentMsgHolder[0];
+                currentMsg.IsStreaming = false;
+                currentMsg.IsReasoningExpanded = false;
+                currentMsg.Status = AiMessageStatus.Completed;
             });
         }
         catch (OperationCanceledException)
@@ -287,13 +361,14 @@ public partial class AiChatViewModel : PageBase
             // 用户取消操作
             Dispatcher.UIThread.Post(() =>
             {
-                assistantMsg.IsStreaming = false;
-                assistantMsg.Status = AiMessageStatus.Cancelled;
-                if (string.IsNullOrWhiteSpace(assistantMsg.Content))
+                var currentMsg = currentMsgHolder[0];
+                currentMsg.IsStreaming = false;
+                currentMsg.Status = AiMessageStatus.Cancelled;
+                if (string.IsNullOrWhiteSpace(currentMsg.Content))
                 {
                     var cancelMsg = "已停止生成";
-                    assistantMsg.Content = cancelMsg;
-                    assistantMsg.ContentBuilder.Append(cancelMsg);
+                    currentMsg.Content = cancelMsg;
+                    currentMsg.ContentBuilder.Append(cancelMsg);
                 }
             });
         }
@@ -301,11 +376,12 @@ public partial class AiChatViewModel : PageBase
         {
             Dispatcher.UIThread.Post(() =>
             {
-                assistantMsg.IsStreaming = false;
-                assistantMsg.Status = AiMessageStatus.Error;
+                var currentMsg = currentMsgHolder[0];
+                currentMsg.IsStreaming = false;
+                currentMsg.Status = AiMessageStatus.Error;
                 var errorMsg = $"错误: {ex.Message}";
-                assistantMsg.Content = errorMsg;
-                assistantMsg.ContentBuilder.Append(errorMsg);
+                currentMsg.Content = errorMsg;
+                currentMsg.ContentBuilder.Append(errorMsg);
             });
         }
         finally
@@ -344,5 +420,95 @@ public partial class AiChatViewModel : PageBase
         {
             message.IsReasoningExpanded = !message.IsReasoningExpanded;
         }
+    }
+
+    /// <summary>
+    /// 切换搜索结果展开/收起
+    /// </summary>
+    [RelayCommand]
+    private void ToggleSearchResult(ChatMessage message)
+    {
+        if (message != null)
+        {
+            message.IsSearchResultExpanded = !message.IsSearchResultExpanded;
+        }
+    }
+
+    /// <summary>
+    /// 格式化工具执行结果，供用户查看（精简版：只显示概述和链接）
+    /// </summary>
+    private string FormatToolResultsForUser(string toolResults)
+    {
+        // 解析XML格式的工具结果
+        var lines = toolResults.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var formattedOutput = "### 📚 搜索概览\n\n";
+
+        var inResult = false;
+        var resultContent = new System.Text.StringBuilder();
+
+        foreach (var line in lines)
+        {
+            var trimmedLine = line.Trim();
+
+            if (trimmedLine.StartsWith("<result>"))
+            {
+                inResult = true;
+                var content = trimmedLine.Replace("<result>", "").Replace("</result>", "").Trim();
+                if (!string.IsNullOrEmpty(content))
+                {
+                    resultContent.AppendLine(content);
+                }
+            }
+            else if (trimmedLine.EndsWith("</result>"))
+            {
+                inResult = false;
+                var content = trimmedLine.Replace("</result>", "").Trim();
+                if (!string.IsNullOrEmpty(content))
+                {
+                    resultContent.AppendLine(content);
+                }
+            }
+            else if (inResult && !trimmedLine.StartsWith("<"))
+            {
+                resultContent.AppendLine(trimmedLine);
+            }
+        }
+
+        // 提取搜索结果中的各个条目，并格式化为简洁形式
+        var resultText = resultContent.ToString();
+
+        // 使用正则表达式提取搜索结果条目
+        var pattern = @"(\d+)\.\s+\*\*(.+?)\*\*\s+来源:\s+(.+?)\s+链接:\s+(.+?)\s+摘要:\s+(.+?)(?=\n\d+\.\s+\*\*|\z)";
+        var matches = System.Text.RegularExpressions.Regex.Matches(resultText, pattern, System.Text.RegularExpressions.RegexOptions.Singleline);
+
+        if (matches.Count > 0)
+        {
+            var count = 0;
+            foreach (System.Text.RegularExpressions.Match match in matches)
+            {
+                count++;
+                var title = match.Groups[2].Value.Trim();
+                var url = match.Groups[4].Value.Trim();
+                var snippet = match.Groups[5].Value.Trim();
+
+                // 精简摘要到50字以内
+                if (snippet.Length > 50)
+                {
+                    snippet = snippet.Substring(0, 50) + "...";
+                }
+
+                formattedOutput += $"{count}. **[{title}]({url})**  \n";
+                formattedOutput += $"   _{snippet}_\n\n";
+            }
+
+            formattedOutput += $"\n💡 共找到 {count} 条相关信息";
+        }
+        else
+        {
+            // 如果无法解析，显示简化的原始结果
+            formattedOutput += "搜索已完成，结果已用于生成回答。";
+        }
+
+        return formattedOutput.TrimEnd();
     }
 }

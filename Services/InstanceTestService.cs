@@ -7,8 +7,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace AiComputer.Services;
 
@@ -18,7 +16,7 @@ namespace AiComputer.Services;
 public class InstanceTestService
 {
     private readonly HttpClient _httpClient;
-    private const string InstancesYmlPath = "Services/instances.yml";
+    private readonly SearxSpaceApiService _apiService;
     private const string AvailableInstancesJsonPath = "Services/available_instances.json";
 
     public InstanceTestService()
@@ -35,41 +33,37 @@ public class InstanceTestService
         };
 
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+
+        _apiService = new SearxSpaceApiService();
     }
 
     /// <summary>
-    /// 从 instances.yml 加载实例列表
+    /// 从 searx.space API 动态加载实例列表
     /// </summary>
-    public List<InstanceInfo> LoadInstancesFromYml()
+    public async Task<List<InstanceInfo>> LoadInstancesFromApiAsync(
+        CancellationToken cancellationToken = default,
+        Action<string>? progressCallback = null)
     {
         try
         {
-            if (!File.Exists(InstancesYmlPath))
+            progressCallback?.Invoke("正在从 searx.space API 获取实例列表...");
+            var instances = await _apiService.FetchInstancesAsync(cancellationToken, progressCallback);
+
+            if (instances.Count > 0)
             {
-                Console.WriteLine($"[InstanceTest] 文件不存在: {InstancesYmlPath}");
+                progressCallback?.Invoke($"✓ 成功获取 {instances.Count} 个实例");
+                return instances;
+            }
+            else
+            {
+                progressCallback?.Invoke("⚠ API 未返回任何实例");
                 return new List<InstanceInfo>();
             }
-
-            var yaml = File.ReadAllText(InstancesYmlPath);
-            var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(UnderscoredNamingConvention.Instance)
-                .Build();
-
-            var instances = deserializer.Deserialize<Dictionary<string, object>>(yaml);
-
-            return instances.Keys
-                .Where(url => url.StartsWith("https://")) // 只保留 HTTPS
-                .Select(url => new InstanceInfo
-                {
-                    Url = url,
-                    Status = InstanceStatus.Unknown,
-                    LastTestTime = DateTime.Now
-                })
-                .ToList();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[InstanceTest] 加载 YAML 失败: {ex.Message}");
+            progressCallback?.Invoke($"✗ API 获取失败: {ex.Message}");
+            Console.WriteLine($"[InstanceTest] API 获取失败: {ex.Message}");
             return new List<InstanceInfo>();
         }
     }
