@@ -246,18 +246,19 @@
                 <!-- 消息列表 -->
                 <ScrollViewer IsVisible="{Binding !ShowWelcomeScreen}"
                               Padding="20"
-                              Name="MessageScrollViewer">
+                              Name="MessageScrollViewer"
+                              ScrollChanged="MessageScrollViewer_OnScrollChanged">
                     <ItemsControl ItemsSource="{Binding Messages}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="models:ChatMessage">
                                 <Grid Margin="0,0,0,15">
                                     <!-- 用户消息 -->
-                                    <StackPanel IsVisible="{Binding IsUser}">
+                                    <StackPanel IsVisible="{Binding IsUser}" Margin="50,0,10,0">
                                         <Border Background="{DynamicResource SukiPrimaryColor}"
                                                 CornerRadius="12"
                                                 Padding="15"
                                                 HorizontalAlignment="Right"
-                                                MaxWidth="1200">
+                                                MaxWidth="700">
                                             <!-- Markdown 渲染器 -->
                                             <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
                                         </Border>
@@ -269,7 +270,7 @@
                                     </StackPanel>
 
                                     <!-- AI 助手消息 -->
-                                    <StackPanel IsVisible="{Binding IsAssistant}">
+                                    <StackPanel IsVisible="{Binding IsAssistant}" Margin="10,0,50,0">
                                         <!-- 搜索结果气泡（特殊样式） -->
                                         <Border IsVisible="{Binding IsSearchResult}"
                                                 Background="#15A3E6F5"
@@ -334,7 +335,11 @@
                                                         <!-- 展开的思考内容 -->
                                                         <Border IsVisible="{Binding IsReasoningExpanded}"
                                                                 Margin="0,10,0,0">
-                                                            <ScrollViewer MaxHeight="300" HorizontalScrollBarVisibility="Disabled">
+                                                            <ScrollViewer Name="ReasoningScrollViewer"
+                                                                          MaxHeight="300"
+                                                                          HorizontalScrollBarVisibility="Disabled"
+                                                                          SizeChanged="ReasoningScrollViewer_OnSizeChanged"
+                                                                          Tag="{Binding}">
                                                                 <!-- Markdown 渲染器 -->
                                                                 <md:MarkdownRenderer MarkdownBuilder="{Binding ReasoningContentBuilder}" />
                                                             </ScrollViewer>
@@ -343,8 +348,10 @@
                                                 </Border>
 
                                                 <!-- 回答内容 -->
-                                                <!-- Markdown 渲染器 -->
-                                                <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
+                                                <Border IsVisible="{Binding HasContent}">
+                                                    <!-- Markdown 渲染器 -->
+                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
+                                                </Border>
                                             </StackPanel>
                                         </suki:GlassCard>
 

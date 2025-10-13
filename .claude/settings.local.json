@@ -36,7 +36,12 @@
       "Read(//d/AI/ai-computer/**)",
       "Bash(git lfs:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(cat:*)",
+      "Bash(npx -y @mcp_router/cli@latest list-tools:*)",
+      "Bash(del \"I:\\ai-computer\\ai-computer\\Behaviors\\AutoScrollBehavior.cs\")",
+      "Bash(npx -y @mcp_router/cli@latest connect:*)",
+      "Read(//i/**)"
     ],
     "deny": [],
     "ask": []

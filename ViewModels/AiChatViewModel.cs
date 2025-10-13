@@ -69,6 +69,27 @@ public partial class AiChatViewModel : PageBase
     public bool ShowWelcomeScreen => CurrentSession == null || CurrentSession.IsEmpty;
 
     /// <summary>
+    /// 是否启用自动滚动到底部（当用户向上滚动时禁用，回到底部时启用）
+    /// </summary>
+    [ObservableProperty]
+    private bool _isAutoScrollEnabled = true;
+
+    /// <summary>
+    /// 滚动阈值：距离底部多少像素内认为是"在底部"
+    /// </summary>
+    private const double ScrollThreshold = 50.0;
+
+    /// <summary>
+    /// ScrollViewer 引用（用于自动滚动）
+    /// </summary>
+    private Avalonia.Controls.ScrollViewer? _scrollViewer;
+
+    /// <summary>
+    /// 标记是否正在执行程序触发的自动滚动（用于区分用户手动滚动）
+    /// </summary>
+    private bool _isProgrammaticScroll = false;
+
+    /// <summary>
     /// 构造函数
     /// </summary>
     public AiChatViewModel() : base("AI 聊天", PackIconMaterialKind.Chat, 0)
@@ -224,6 +245,9 @@ public partial class AiChatViewModel : PageBase
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             CurrentSession.Messages.Add(userMsg);
+
+            // 添加新消息后滚动到底部
+            ScrollToBottom();
         });
 
         // 创建 AI 回复消息
@@ -241,6 +265,9 @@ public partial class AiChatViewModel : PageBase
         Dispatcher.UIThread.Post(() =>
         {
             CurrentSession.Messages.Add(assistantMsg);
+
+            // 添加新消息后滚动到底部
+            ScrollToBottom();
         });
 
         IsSending = true;
@@ -249,9 +276,11 @@ public partial class AiChatViewModel : PageBase
         // 使用数组包装以便在闭包中修改引用（工具调用后会切换到新气泡）
         var currentMsgHolder = new[] { assistantMsg };
 
-        // 保存搜索气泡引用和搜索查询列表
-        ChatMessage? searchBubble = null;
-        var searchQueries = new List<string>();
+        // 保存所有工具气泡的字典（key: toolName, value: bubble）
+        var toolBubbles = new Dictionary<string, ChatMessage>();
+
+        // 记录当前这轮工具调用的工具名称列表（用于工具完成回调）
+        var currentRoundTools = new List<string>();
 
         try
         {
@@ -280,6 +309,9 @@ public partial class AiChatViewModel : PageBase
                             // 使用 ObservableStringBuilder 的 Append 方法实时更新
                             currentMsg.ReasoningContentBuilder.Append(reasoningChunk);
                             currentMsg.ReasoningContent += reasoningChunk; // 保持字符串同步用于状态判断
+
+                            // 自动滚动到底部（如果启用）
+                            ScrollToBottom();
                         });
                     },
                     contentChunk =>
@@ -296,6 +328,9 @@ public partial class AiChatViewModel : PageBase
                             // 使用 ObservableStringBuilder 的 Append 方法实时更新
                             currentMsg.ContentBuilder.Append(contentChunk);
                             currentMsg.Content += contentChunk; // 保持字符串同步用于状态判断
+
+                            // 自动滚动到底部（如果启用）
+                            ScrollToBottom();
                         });
                     },
                     (toolName, toolArgs) =>
@@ -314,7 +349,6 @@ public partial class AiChatViewModel : PageBase
                             if (toolName == "web_search")
                             {
                                 var query = argsRoot.GetProperty("query").GetString() ?? "";
-                                searchQueries.Add(query);
                                 displayText = $"正在搜索: {query}";
                                 icon = "🔍";
                                 Console.WriteLine($"[UI] Tool called: web_search, query: {query}");
@@ -323,7 +357,6 @@ public partial class AiChatViewModel : PageBase
                             {
                                 var keyword = argsRoot.GetProperty("keyword").GetString() ?? "";
                                 var count = argsRoot.TryGetProperty("count", out var countProp) ? countProp.GetInt32() : 3;
-                                searchQueries.Add(keyword);
                                 displayText = $"正在推荐商品: {keyword} (数量: {count})";
                                 icon = "🛒";
                                 Console.WriteLine($"[UI] Tool called: recommend_jd_product, keyword: {keyword}, count: {count}");
@@ -331,16 +364,15 @@ public partial class AiChatViewModel : PageBase
                             else
                             {
                                 // 未知工具
-                                searchQueries.Add(toolName);
                                 displayText = $"正在执行工具: {toolName}";
                                 icon = "⚙️";
                                 Console.WriteLine($"[UI] Tool called: {toolName}");
                             }
 
-                            // 如果还没有工具气泡，创建一个
-                            if (searchBubble == null)
+                            // 为每个工具创建独立的气泡
+                            if (!toolBubbles.ContainsKey(toolName))
                             {
-                                searchBubble = new ChatMessage
+                                var toolBubble = new ChatMessage
                                 {
                                     Role = MessageRole.Assistant,
                                     Content = $"{icon} {displayText}",
@@ -350,59 +382,75 @@ public partial class AiChatViewModel : PageBase
                                     ToolName = toolName,
                                     ToolArguments = toolArgs
                                 };
-                                CurrentSession.Messages.Add(searchBubble);
+                                toolBubbles[toolName] = toolBubble;
+                                CurrentSession.Messages.Add(toolBubble);
+                                Console.WriteLine($"[UI] Created new tool bubble for: {toolName}");
                             }
                             else
                             {
-                                // 更新已有工具气泡的内容，显示所有工具调用
-                                var toolText = searchQueries.Count == 1
-                                    ? $"{icon} {displayText}"
-                                    : $"{icon} 正在执行 {searchQueries.Count} 个工具:\n" +
-                                      string.Join("\n", searchQueries.Select((q, i) => $"  {i + 1}. {q}"));
+                                // 更新已有工具气泡的状态（表示正在执行）
+                                var existingBubble = toolBubbles[toolName];
+                                existingBubble.Content = $"{icon} {displayText}";
+                                existingBubble.ContentBuilder.Clear();
+                                existingBubble.ContentBuilder.Append($"{icon} {displayText}");
+                                Console.WriteLine($"[UI] Updated tool bubble for: {toolName}");
+                            }
 
-                                searchBubble.Content = toolText;
-                                searchBubble.ContentBuilder.Clear();
-                                searchBubble.ContentBuilder.Append(toolText);
+                            // 记录本轮调用的工具（用于工具完成回调）
+                            if (!currentRoundTools.Contains(toolName))
+                            {
+                                currentRoundTools.Add(toolName);
                             }
 
                         }).Wait();
                     },
                     toolResults =>
                     {
-                        // 工具完成回调 - 更新工具气泡状态和内容
+                        // 工具完成回调 - 更新本轮调用的工具气泡状态和内容
                         Dispatcher.UIThread.Post(() =>
                         {
-                            if (searchBubble != null)
+                            Console.WriteLine($"[UI] Tools completed, updating {currentRoundTools.Count} bubbles");
+
+                            // 遍历本轮调用的所有工具，更新对应的气泡
+                            foreach (var toolName in currentRoundTools)
                             {
-                                Console.WriteLine($"[UI] Tools completed: {searchBubble.ToolName}");
-
-                                // 更新状态
-                                searchBubble.Status = AiMessageStatus.SearchCompleted;
-
-                                // 根据工具类型格式化结果
-                                string formattedResults;
-                                if (searchBubble.ToolName == "recommend_jd_product")
+                                if (toolBubbles.TryGetValue(toolName, out var toolBubble))
                                 {
-                                    // 京东商品推荐结果已经格式化好，直接使用
-                                    formattedResults = ExtractToolResult(toolResults);
-                                    Console.WriteLine($"[UI] JD product recommendation completed");
-                                }
-                                else if (searchBubble.ToolName == "web_search")
-                                {
-                                    // 网络搜索结果需要格式化
-                                    formattedResults = FormatToolResultsForUser(toolResults);
-                                    Console.WriteLine($"[UI] Web search completed");
-                                }
-                                else
-                                {
-                                    // 其他工具，提取原始结果
-                                    formattedResults = ExtractToolResult(toolResults);
-                                }
+                                    Console.WriteLine($"[UI] Updating bubble for tool: {toolName}");
 
-                                searchBubble.Content = formattedResults;
-                                searchBubble.ContentBuilder.Clear();
-                                searchBubble.ContentBuilder.Append(formattedResults);
+                                    // 更新状态
+                                    toolBubble.Status = AiMessageStatus.SearchCompleted;
+
+                                    // 根据工具类型格式化结果
+                                    string formattedResults;
+                                    if (toolName == "recommend_jd_product")
+                                    {
+                                        // 京东商品推荐结果已经格式化好，直接使用
+                                        formattedResults = ExtractToolResult(toolResults);
+                                        Console.WriteLine($"[UI] JD product recommendation completed");
+                                    }
+                                    else if (toolName == "web_search")
+                                    {
+                                        // 网络搜索结果需要格式化
+                                        formattedResults = FormatToolResultsForUser(toolResults);
+                                        Console.WriteLine($"[UI] Web search completed");
+                                    }
+                                    else
+                                    {
+                                        // 其他工具，提取原始结果
+                                        formattedResults = ExtractToolResult(toolResults);
+                                    }
+
+                                    toolBubble.Content = formattedResults;
+                                    toolBubble.ContentBuilder.Clear();
+                                    toolBubble.ContentBuilder.Append(formattedResults);
+
+                                    // 不再自动收起搜索结果，让用户自行控制
+                                }
                             }
+
+                            // 清空本轮工具列表，为下一轮准备
+                            currentRoundTools.Clear();
                         });
                     },
                     _cancellationTokenSource.Token
@@ -494,6 +542,63 @@ public partial class AiChatViewModel : PageBase
         {
             message.IsSearchResultExpanded = !message.IsSearchResultExpanded;
         }
+    }
+
+    /// <summary>
+    /// 处理滚动位置变化（用于检测用户是否主动滚动）
+    /// </summary>
+    /// <param name="scrollViewer">ScrollViewer 控件</param>
+    public void OnScrollChanged(object? sender, Avalonia.Controls.ScrollChangedEventArgs e)
+    {
+        if (sender is not Avalonia.Controls.ScrollViewer scrollViewer)
+            return;
+
+        // 保存 ScrollViewer 引用
+        _scrollViewer = scrollViewer;
+
+        // 如果是程序触发的滚动，忽略此次事件（不改变自动滚动状态）
+        if (_isProgrammaticScroll)
+        {
+            return;
+        }
+
+        // 计算是否在底部
+        var offset = scrollViewer.Offset.Y;
+        var extent = scrollViewer.Extent.Height;
+        var viewport = scrollViewer.Viewport.Height;
+
+        // 如果滚动位置 + 可视高度 >= 总高度 - 阈值，则认为在底部
+        var isAtBottom = (offset + viewport) >= (extent - ScrollThreshold);
+
+        // 用户手动滚动时：根据是否在底部更新自动滚动状态
+        IsAutoScrollEnabled = isAtBottom;
+    }
+
+    /// <summary>
+    /// 滚动到底部（在流式输出时调用）
+    /// </summary>
+    public void ScrollToBottom()
+    {
+        if (_scrollViewer == null || !IsAutoScrollEnabled)
+            return;
+
+        // 标记为程序触发的滚动
+        _isProgrammaticScroll = true;
+
+        // 使用 ScrollToEnd 方法滚动到底部
+        Dispatcher.UIThread.Post(() =>
+        {
+            _scrollViewer?.ScrollToEnd();
+
+            // 延迟重置标志，确保 ScrollChanged 事件已处理完成
+            Task.Delay(100).ContinueWith(_ =>
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _isProgrammaticScroll = false;
+                });
+            });
+        }, Avalonia.Threading.DispatcherPriority.Background);
     }
 
     /// <summary>

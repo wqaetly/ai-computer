@@ -85,6 +85,7 @@ public partial class ChatMessage : ObservableObject
     /// 消息内容
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasContent))]
     private string _content = string.Empty;
 
     /// <summary>
@@ -161,6 +162,11 @@ public partial class ChatMessage : ObservableObject
     public bool HasReasoning => !string.IsNullOrWhiteSpace(ReasoningContent) || ReasoningContentBuilder.Length > 0;
 
     /// <summary>
+    /// 是否有回答内容
+    /// </summary>
+    public bool HasContent => !string.IsNullOrWhiteSpace(Content) || ContentBuilder.Length > 0;
+
+    /// <summary>
     /// 是否为用户消息
     /// </summary>
     public bool IsUser => Role == MessageRole.User;
@@ -171,25 +177,55 @@ public partial class ChatMessage : ObservableObject
     public bool IsAssistant => Role == MessageRole.Assistant;
 
     /// <summary>
-    /// 是否为搜索结果消息
+    /// 是否为工具结果消息（搜索、推荐等）
     /// </summary>
-    public bool IsSearchResult => !string.IsNullOrEmpty(ToolName) && ToolName == "web_search";
+    public bool IsSearchResult => !string.IsNullOrEmpty(ToolName);
 
     /// <summary>
     /// 状态文本
     /// </summary>
-    public string StatusText => Status switch
+    public string StatusText
     {
-        AiMessageStatus.Waiting => "等待响应中...",
-        AiMessageStatus.Thinking => "思考中...",
-        AiMessageStatus.Searching => "联网搜索中...",
-        AiMessageStatus.SearchCompleted => "联网搜索完毕",
-        AiMessageStatus.Generating => "输出中...",
-        AiMessageStatus.Completed => "已完成",
-        AiMessageStatus.Cancelled => "已取消",
-        AiMessageStatus.Error => "发生错误",
-        _ => string.Empty
-    };
+        get
+        {
+            // 工具结果消息根据工具类型和状态显示不同文本
+            if (!string.IsNullOrEmpty(ToolName))
+            {
+                if (Status == AiMessageStatus.Searching)
+                {
+                    return ToolName switch
+                    {
+                        "web_search" => "联网搜索中...",
+                        "recommend_jd_product" => "正在推荐商品...",
+                        _ => "工具执行中..."
+                    };
+                }
+                else if (Status == AiMessageStatus.SearchCompleted)
+                {
+                    return ToolName switch
+                    {
+                        "web_search" => "联网搜索完毕",
+                        "recommend_jd_product" => "商品推荐完毕",
+                        _ => "工具执行完毕"
+                    };
+                }
+            }
+
+            // 普通消息的状态文本
+            return Status switch
+            {
+                AiMessageStatus.Waiting => "等待响应中...",
+                AiMessageStatus.Thinking => "思考中...",
+                AiMessageStatus.Searching => "处理中...",
+                AiMessageStatus.SearchCompleted => "处理完毕",
+                AiMessageStatus.Generating => "输出中...",
+                AiMessageStatus.Completed => "已完成",
+                AiMessageStatus.Cancelled => "已取消",
+                AiMessageStatus.Error => "发生错误",
+                _ => string.Empty
+            };
+        }
+    }
 
     /// <summary>
     /// 是否显示状态（非用户消息且正在处理中）

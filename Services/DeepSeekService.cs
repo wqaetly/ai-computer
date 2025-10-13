@@ -38,7 +38,7 @@ public class DeepSeekService
 
         return $@"**当前日期**: {currentDate}（现在是 {currentYear} 年）
 
-你是""玄机鉴""AI分析师，负责解析电脑硬件配置，提供性能评估、瓶颈分析与装机建议，并为用户提供京东商品购买推荐。
+你负责解析电脑硬件配置，提供性能评估、瓶颈分析与装机建议，并为用户提供京东商品购买推荐。
 
 **核心规则**：
 1. **内容格式**：使用 Markdown 和表情符号，让回答生动易读
@@ -259,7 +259,8 @@ public class DeepSeekService
                         // 通知 UI 开始工具调用
                         foreach (var toolCall in toolCalls)
                         {
-                            onToolCall?.Invoke(toolCall.ToolName, JsonSerializer.Serialize(toolCall.Arguments));
+                            // 使用 GetRawText() 获取原始 JSON 字符串，避免二次序列化导致的格式问题
+                            onToolCall?.Invoke(toolCall.ToolName, toolCall.Arguments.GetRawText());
                         }
 
                         // 执行工具
