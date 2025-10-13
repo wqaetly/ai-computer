@@ -151,8 +151,107 @@
                 <!-- 分隔线 -->
                 <Separator />
 
-                <!-- 联网搜索设置 -->
-                <suki:GlassCard>
+                <!-- 外观设置（仅当选中"外观"类别时显示） -->
+                <StackPanel Spacing="20" IsVisible="{Binding IsAppearanceSelected}">
+                    <!-- 基础主题选择 -->
+                    <suki:GlassCard IsVisible="{Binding IsAppearanceSelected}">
+                        <StackPanel Spacing="15">
+                            <!-- 设置项标题 -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="基础主题"
+                                           FontSize="15"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="选择亮色或暗色主题"
+                                           FontSize="12"
+                                           Opacity="0.7"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <!-- 主题选择 -->
+                            <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
+                                <RadioButton Width="180"
+                                             Height="160"
+                                             Padding="0"
+                                             Classes="GigaChips"
+                                             GroupName="RadioBaseTheme"
+                                             IsChecked="{Binding IsLightTheme}">
+                                    <Border Margin="-50"
+                                            Background="#fafafa"
+                                            CornerRadius="{DynamicResource MediumCornerRadius}">
+                                        <TextBlock Margin="58,42,42,42"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Bottom"
+                                                   FontWeight="DemiBold"
+                                                   Foreground="#555555"
+                                                   Text="亮色模式" />
+                                    </Border>
+                                </RadioButton>
+
+                                <RadioButton Width="180"
+                                             Height="160"
+                                             Classes="GigaChips"
+                                             GroupName="RadioBaseTheme"
+                                             IsChecked="{Binding !IsLightTheme}">
+                                    <Border Margin="-50"
+                                            Background="#222222"
+                                            CornerRadius="{DynamicResource MediumCornerRadius}">
+                                        <TextBlock Margin="58,42,42,42"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Bottom"
+                                                   FontWeight="DemiBold"
+                                                   Foreground="#fafafa"
+                                                   Text="暗色模式" />
+                                    </Border>
+                                </RadioButton>
+                            </StackPanel>
+                        </StackPanel>
+                    </suki:GlassCard>
+
+                    <!-- 颜色主题选择 -->
+                    <suki:GlassCard IsVisible="{Binding IsAppearanceSelected}">
+                        <StackPanel Spacing="15">
+                            <!-- 设置项标题 -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="颜色主题"
+                                           FontSize="15"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="选择应用程序的主色调"
+                                           FontSize="12"
+                                           Opacity="0.7"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <!-- 颜色选择 -->
+                            <ItemsControl HorizontalAlignment="Center" ItemsSource="{Binding AvailableColors}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel HorizontalAlignment="Center"
+                                                    Orientation="Horizontal"
+                                                    Spacing="10" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="suki:SukiColorTheme">
+                                        <RadioButton Width="50"
+                                                     Height="50"
+                                                     Classes="GigaChips"
+                                                     Command="{Binding ((vm:SettingsViewModel)DataContext).SwitchToColorThemeCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                     CommandParameter="{Binding}"
+                                                     CornerRadius="50"
+                                                     GroupName="RadioColorTheme">
+                                            <Border Margin="-30"
+                                                    Background="{Binding PrimaryBrush}"
+                                                    CornerRadius="50" />
+                                        </RadioButton>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </suki:GlassCard>
+                </StackPanel>
+
+                <!-- 联网搜索设置（仅当选中"联网搜索"类别时显示） -->
+                <suki:GlassCard IsVisible="{Binding IsSearchSelected}">
                     <StackPanel Spacing="15">
                         <!-- 设置项标题 -->
                         <StackPanel Spacing="5">
@@ -218,8 +317,14 @@
                     </StackPanel>
                 </suki:GlassCard>
 
-                <!-- SearxNG 实例测试区域 (仅在选择 SearxNG 时显示) -->
-                <suki:GlassCard IsVisible="{Binding IsSearxNG}">
+                <!-- SearxNG 实例测试区域 (仅在选择 SearxNG 且选中"联网搜索"类别时显示) -->
+                <suki:GlassCard>
+                    <suki:GlassCard.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="IsSearxNG" />
+                            <Binding Path="IsSearchSelected" />
+                        </MultiBinding>
+                    </suki:GlassCard.IsVisible>
                     <StackPanel Spacing="15">
                         <!-- 标题和说明 -->
                         <StackPanel Spacing="5">
@@ -371,7 +476,7 @@
                                                         <TextBlock Text="{Binding ErrorMessage}"
                                                                    FontSize="10"
                                                                    Opacity="0.6"
-                                                                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                                   IsVisible="{Binding !!ErrorMessage}" />
                                                     </StackPanel>
 
                                                     <!-- 响应时间 -->

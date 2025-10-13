@@ -6,11 +6,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using AiComputer.Models;
 using AiComputer.Services;
+using Avalonia.Collections;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IconPacks.Avalonia;
 using IconPacks.Avalonia.Material;
+using SukiUI;
+using SukiUI.Models;
 
 namespace AiComputer.ViewModels;
 
@@ -21,6 +25,7 @@ public partial class SettingsViewModel : PageBase
 {
     private readonly AppSettingsService _appSettings;
     private readonly InstanceTestService _testService;
+    private readonly SukiTheme _theme = SukiTheme.GetInstance();
     private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>
@@ -29,10 +34,31 @@ public partial class SettingsViewModel : PageBase
     public ObservableCollection<SettingCategory> Categories { get; }
 
     /// <summary>
+    /// 可用的颜色主题列表
+    /// </summary>
+    public IAvaloniaReadOnlyList<SukiColorTheme> AvailableColors { get; }
+
+    /// <summary>
+    /// 是否为亮色主题
+    /// </summary>
+    [ObservableProperty]
+    private bool _isLightTheme;
+
+    /// <summary>
     /// 当前选中的设置类别
     /// </summary>
     [ObservableProperty]
     private SettingCategory? _selectedCategory;
+
+    /// <summary>
+    /// 是否选中了外观类别
+    /// </summary>
+    public bool IsAppearanceSelected => SelectedCategory?.Id == "appearance";
+
+    /// <summary>
+    /// 是否选中了联网搜索类别
+    /// </summary>
+    public bool IsSearchSelected => SelectedCategory?.Id == "search";
 
     /// <summary>
     /// 所有可用的搜索服务商列表
@@ -129,6 +155,14 @@ public partial class SettingsViewModel : PageBase
         _appSettings = AppSettingsService.Instance;
         _testService = new InstanceTestService();
 
+        // 初始化主题相关属性
+        AvailableColors = _theme.ColorThemes;
+        IsLightTheme = _theme.ActiveBaseTheme == ThemeVariant.Light;
+
+        // 监听主题变更事件
+        _theme.OnBaseThemeChanged += variant =>
+            IsLightTheme = variant == ThemeVariant.Light;
+
         // 监听配置服务的属性变更，同步到UI
         _appSettings.PropertyChanged += (s, e) =>
         {
@@ -167,12 +201,18 @@ public partial class SettingsViewModel : PageBase
         {
             new SettingCategory
             {
+                Id = "appearance",
+                Name = "外观",
+                Icon = PackIconMaterialKind.Palette,
+                Description = "自定义应用程序的外观和主题"
+            },
+            new SettingCategory
+            {
                 Id = "search",
                 Name = "联网搜索",
                 Icon = PackIconMaterialKind.CloudSearch,
                 Description = "配置AI对话时使用的搜索服务"
             }
-            // 未来可以添加更多设置类别
         };
 
         // 默认选中第一个类别
@@ -184,6 +224,28 @@ public partial class SettingsViewModel : PageBase
             _ = LoadInstancesFromApiAsync();
         }
     }
+
+    /// <summary>
+    /// 当亮色/暗色主题切换时调用
+    /// </summary>
+    partial void OnIsLightThemeChanged(bool value) =>
+        _theme.ChangeBaseTheme(value ? ThemeVariant.Light : ThemeVariant.Dark);
+
+    /// <summary>
+    /// 当选中的类别改变时调用
+    /// </summary>
+    partial void OnSelectedCategoryChanged(SettingCategory? value)
+    {
+        OnPropertyChanged(nameof(IsAppearanceSelected));
+        OnPropertyChanged(nameof(IsSearchSelected));
+    }
+
+    /// <summary>
+    /// 切换到指定颜色主题的命令
+    /// </summary>
+    [RelayCommand]
+    private void SwitchToColorTheme(SukiColorTheme colorTheme) =>
+        _theme.ChangeColorTheme(colorTheme);
 
     /// <summary>
     /// 从 searx.space API 加载实例列表
