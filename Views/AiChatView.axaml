@@ -245,10 +245,10 @@
 
                 <!-- 消息列表 -->
                 <ScrollViewer IsVisible="{Binding !ShowWelcomeScreen}"
-                              Padding="20"
+                              Padding="20,20,20,0"
                               Name="MessageScrollViewer"
                               ScrollChanged="MessageScrollViewer_OnScrollChanged">
-                    <ItemsControl ItemsSource="{Binding Messages}">
+                    <ItemsControl ItemsSource="{Binding Messages}" Margin="0,0,0,40">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="models:ChatMessage">
                                 <Grid Margin="0,0,0,15">
