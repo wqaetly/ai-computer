@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SukiUI.Dialogs;
 
 namespace AiComputer.ViewModels;
 
@@ -51,6 +52,23 @@ public partial class MainWindowViewModel : ViewModelBase
         Pages = new ObservableCollection<PageBase>
         {
             new AiChatViewModel(),
+            new SettingsViewModel()
+        };
+
+        // 默认选中第一个页面（AI 聊天）
+        _activePage = Pages.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// 构造函数（支持依赖注入）
+    /// </summary>
+    /// <param name="dialogManager">对话框管理器</param>
+    public MainWindowViewModel(ISukiDialogManager dialogManager)
+    {
+        // 初始化页面列表
+        Pages = new ObservableCollection<PageBase>
+        {
+            new AiChatViewModel(dialogManager),
             new SettingsViewModel()
         };
 

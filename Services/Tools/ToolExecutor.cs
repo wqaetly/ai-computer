@@ -33,7 +33,7 @@ public class ToolExecutor
     /// <summary>
     /// 构建系统提示词（包含工具使用说明）
     /// </summary>
-    public string BuildSystemPrompt(string userSystemPrompt)
+    public string BuildSystemPrompt(string userSystemPrompt, bool useReasoningModel = true)
     {
         if (_tools.Count == 0)
         {
@@ -41,7 +41,14 @@ public class ToolExecutor
         }
 
         var toolsDescription = BuildToolsDescription();
-        var toolUsePrompt = $@"# Available Tools
+        
+        // 根据是否是深度思考模式生成不同的工具使用说明
+        string toolUsePrompt;
+        
+        if (useReasoningModel)
+        {
+            // 深度思考模式的工具使用说明（保持原有逻辑）
+            toolUsePrompt = $@"# Available Tools
 
 {toolsDescription}
 
@@ -63,7 +70,7 @@ You MUST call tools when encountering ANY of the following:
 **Tool Call Syntax:**
 <tool_use>
   <name>tool_name</name>
-  <arguments>{{json_parameters}}</arguments>
+  <arguments>{{""json_parameters""}}</arguments>
 </tool_use>
 
 **Multiple Tool Calls Example:**
@@ -99,6 +106,56 @@ Tool results format:
 
 # User Instructions
 {userSystemPrompt}";
+        }
+        else
+        {
+            // 普通模式的工具使用说明（简化工具调用逻辑，减少重复调用）
+            toolUsePrompt = $@"# Available Tools
+
+{toolsDescription}
+
+## 🔧 Tool Usage Rules (SIMPLIFIED)
+
+**When to Call Tools:**
+Call tools ONLY when you need specific information that you don't have:
+- Current prices or availability
+- Very recent product specifications (within 6 months)
+- Performance benchmarks for new hardware
+
+**Response Format:**
+1. Provide your answer based on existing knowledge
+2. If you need additional information, make a SINGLE, focused tool call
+3. Avoid multiple tool calls for the same query
+
+**Tool Call Syntax:**
+<tool_use>
+  <name>tool_name</name>
+  <arguments>{{""json_parameters""}}</arguments>
+</tool_use>
+
+**Example:**
+For a question about ""RTX 4090"", first provide what you know, then:
+
+<tool_use>
+  <name>web_search</name>
+  <arguments>{{""query"": ""RTX 4090 current price 2025""}}</arguments>
+</tool_use>
+
+**Important Rules:**
+- Prioritize existing knowledge over tool calls
+- Make ONE tool call at most per response
+- Be specific and focused in your queries
+- Tool results will be automatically executed and provided back to you
+
+Tool results format:
+<tool_use_result>
+  <name>tool_name</name>
+  <result>result_data</result>
+</tool_use_result>
+
+# User Instructions
+{userSystemPrompt}";
+        }
 
         return toolUsePrompt;
     }

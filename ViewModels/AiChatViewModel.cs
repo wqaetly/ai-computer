@@ -14,6 +14,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IconPacks.Avalonia;
 using IconPacks.Avalonia.Material;
+using SukiUI.Dialogs;
 
 namespace AiComputer.ViewModels;
 
@@ -26,6 +27,11 @@ public partial class AiChatViewModel : PageBase
     private readonly HybridSearchService _searchService;
     private readonly JDRecommendToolHelper _jdRecommendHelper;
     private CancellationTokenSource? _cancellationTokenSource;
+
+    /// <summary>
+    /// 对话框管理器
+    /// </summary>
+    private readonly ISukiDialogManager? _dialogManager;
 
     /// <summary>
     /// 所有对话会话列表
@@ -114,7 +120,34 @@ public partial class AiChatViewModel : PageBase
     }
 
     /// <summary>
-    /// 注册所有可用工具
+    /// 构造函数（支持依赖注入）
+    /// </summary>
+    /// <param name="dialogManager">对话框管理器</param>
+    public AiChatViewModel(ISukiDialogManager dialogManager) : base("AI 聊天", PackIconMaterialKind.Chat, 0)
+    {
+        _dialogManager = dialogManager;
+
+        // 使用提供的 API Key
+        _deepSeekService = new DeepSeekService("sk-e8ec7e0c860d4b7d98ffc4212ab2c138");
+
+        // 初始化搜索服务（使用混合搜索，优先浏览器，降级到 SearxNG）
+        _searchService = new HybridSearchService();
+
+        // 初始化京东联盟推荐服务
+        var httpClient = new HttpClient();
+        var jdUnionService = new JDUnionService(httpClient);
+        var jdRecommendService = new JDGoodsRecommendService(jdUnionService);
+        _jdRecommendHelper = new JDRecommendToolHelper(jdRecommendService);
+
+        // 注册工具
+        RegisterTools();
+
+        // 创建第一个默认会话
+        CreateNewSession();
+    }
+
+    /// <summary>
+    /// 注册所有可用工具（根据设置动态注册）
     /// </summary>
     private void RegisterTools()
     {
@@ -126,12 +159,20 @@ public partial class AiChatViewModel : PageBase
         });
         _deepSeekService.RegisterTool(webSearchTool);
 
-        // 注册京东商品推荐工具
-        var jdProductTool = new JDProductRecommendTool(async (keyword, minPrice, maxPrice, count) =>
+        // 仅在启用京东价格查询时注册京东商品推荐工具
+        if (AppSettingsService.Instance.EnableJDPriceQuery)
         {
-            return await _jdRecommendHelper.RecommendAndFormatAsync(keyword, minPrice, maxPrice, count);
-        });
-        _deepSeekService.RegisterTool(jdProductTool);
+            var jdProductTool = new JDProductRecommendTool(async (keyword, minPrice, maxPrice, count) =>
+            {
+                return await _jdRecommendHelper.RecommendAndFormatAsync(keyword, minPrice, maxPrice, count);
+            });
+            _deepSeekService.RegisterTool(jdProductTool);
+            Console.WriteLine("[AiChat] 京东商品推荐工具已注册");
+        }
+        else
+        {
+            Console.WriteLine("[AiChat] 京东商品推荐工具未注册（功能已禁用）");
+        }
     }
 
     /// <summary>
@@ -198,9 +239,27 @@ public partial class AiChatViewModel : PageBase
     private void RenameSession(ChatSession session)
     {
         if (session == null) return;
+        
+        // 切换编辑状态
+        session.IsEditing = true;
+    }
 
-        // TODO: 实现重命名对话框
-        // 暂时禁用此功能
+    /// <summary>
+    /// 完成重命名
+    /// </summary>
+    [RelayCommand]
+    private void FinishRename(ChatSession session)
+    {
+        if (session == null) return;
+        
+        // 退出编辑状态
+        session.IsEditing = false;
+        
+        // 如果标题为空，恢复默认标题
+        if (string.IsNullOrWhiteSpace(session.Title))
+        {
+            session.Title = "新对话";
+        }
     }
 
     /// <summary>
@@ -284,6 +343,9 @@ public partial class AiChatViewModel : PageBase
 
         try
         {
+            // 根据设置决定是否使用深度思考模型
+            var useReasoningModel = AppSettingsService.Instance.EnableDeepThinking;
+
             // 准备消息历史 - 包含当前用户消息，排除即将添加的助手消息
             var messageHistory = CurrentSession.Messages
                 .Where(m => m.Role != MessageRole.System)
@@ -453,6 +515,7 @@ public partial class AiChatViewModel : PageBase
                             currentRoundTools.Clear();
                         });
                     },
+                    useReasoningModel,
                     _cancellationTokenSource.Token
                 );
             }, _cancellationTokenSource.Token).ConfigureAwait(false);

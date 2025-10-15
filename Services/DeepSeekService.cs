@@ -28,7 +28,7 @@ public class DeepSeekService
     private readonly ToolExecutor _toolExecutor;
 
     /// <summary>
-    /// 获取基础系统提示词（不包含工具说明，但包含当前日期）
+    /// 获取基础系统提示词（不包含工具说明，但包含当前日期，根据配置动态生成）
     /// </summary>
     private string GetBaseSystemPrompt()
     {
@@ -36,14 +36,23 @@ public class DeepSeekService
         var currentDate = now.ToString("yyyy年MM月dd日");
         var currentYear = now.Year;
 
-        return $@"**当前日期**: {currentDate}（现在是 {currentYear} 年）
+        // 检查是否启用京东价格查询
+        var enableJDPriceQuery = AiComputer.Services.AppSettingsService.Instance.EnableJDPriceQuery;
 
-你负责解析电脑硬件配置，提供性能评估、瓶颈分析与装机建议，并为用户提供京东商品购买推荐。
+        // 基础提示词
+        var basePrompt = $@"**当前日期**: {currentDate}（现在是 {currentYear} 年）
+
+你负责解析电脑硬件配置，提供性能评估、瓶颈分析与装机建议{(enableJDPriceQuery ? "，并为用户提供京东商品购买推荐" : "")}。
 
 **核心规则**：
 1. **内容格式**：使用 Markdown 和表情符号，让回答生动易读
-2. **数据准确性**：价格和性能数据需标注来源和时效性
-3. **专业性**：提供客观、准确的技术分析
+2. **数据准确性**：{(enableJDPriceQuery ? "价格和性能数据需标注来源和时效性" : "性能数据需标注来源和时效性")}
+3. **专业性**：提供客观、准确的技术分析";
+
+        // 仅在启用京东价格查询时添加商品推荐相关说明
+        if (enableJDPriceQuery)
+        {
+            basePrompt += @"
 
 **商品推荐规则（非常重要）**：
 当用户有以下意图时，**必须使用recommend_jd_product工具**推荐京东商品：
@@ -59,14 +68,31 @@ public class DeepSeekService
 3. 基于工具返回的商品信息给出专业分析和建议
 4. **确保用户能看到购买链接**（工具已自动生成推广链接）
 
-**重要**：不要自己编造价格或购买链接，必须使用工具获取真实的京东数据！
+**重要**：不要自己编造价格或购买链接，必须使用工具获取真实的京东数据！";
+        }
+        else
+        {
+            basePrompt += @"
+
+**价格说明**：
+当前未启用商品价格查询功能，如果用户询问价格信息，请告知用户价格信息功能暂未开启，建议前往 **设置 > AI设置** 启用京东价格查询功能。";
+        }
+
+        basePrompt += @"
 
 **思考要求**：
 - 保持推理过程精简、高效
 - 直接聚焦关键问题点
 - 避免冗余的思考步骤
-- 快速识别需要搜索的信息
+- 快速识别需要搜索的信息";
+
+        if (enableJDPriceQuery)
+        {
+            basePrompt += @"
 - **优先识别购买意图，及时调用商品推荐工具**";
+        }
+
+        return basePrompt;
     }
 
     /// <summary>
@@ -97,9 +123,9 @@ public class DeepSeekService
     /// <summary>
     /// 获取完整的系统提示词（包含工具使用说明）
     /// </summary>
-    private string GetSystemPrompt()
+    private string GetSystemPrompt(bool useReasoningModel = true)
     {
-        return _toolExecutor.BuildSystemPrompt(GetBaseSystemPrompt());
+        return _toolExecutor.BuildSystemPrompt(GetBaseSystemPrompt(), useReasoningModel);
     }
 
     /// <summary>
@@ -115,6 +141,7 @@ public class DeepSeekService
     /// <param name="onContentChunk">回答内容回调</param>
     /// <param name="onToolCall">工具调用回调（通知UI开始工具调用）</param>
     /// <param name="onToolCompleted">工具完成回调（通知UI工具执行完成，传递工具结果）</param>
+    /// <param name="useReasoningModel">是否使用推理模型（deepseek-reasoner），false时使用普通模型（deepseek-chat）</param>
     /// <param name="cancellationToken">取消令牌</param>
     public async Task ChatCompletionStreamAsync(
         List<ChatMessage> messages,
@@ -122,6 +149,7 @@ public class DeepSeekService
         Action<string>? onContentChunk = null,
         Action<string, string>? onToolCall = null,
         Action<string>? onToolCompleted = null,
+        bool useReasoningModel = true,
         CancellationToken cancellationToken = default)
     {
         await ChatCompletionInternalAsync(
@@ -130,6 +158,7 @@ public class DeepSeekService
             onContentChunk,
             onToolCall,
             onToolCompleted,
+            useReasoningModel,
             toolCallDepth: 0,
             cancellationToken);
     }
@@ -143,13 +172,14 @@ public class DeepSeekService
         Action<string>? onContentChunk,
         Action<string, string>? onToolCall,
         Action<string>? onToolCompleted,
+        bool useReasoningModel,
         int toolCallDepth,
         CancellationToken cancellationToken)
     {
         // 构造消息列表
         var messageList = new List<object>
         {
-            new { role = "system", content = GetSystemPrompt() }
+            new { role = "system", content = GetSystemPrompt(useReasoningModel) }
         };
 
         // 添加用户消息历史
@@ -163,10 +193,10 @@ public class DeepSeekService
             });
         }
 
-        // 构造请求体
+        // 构造请求体 - 根据参数选择模型
         var requestBody = new
         {
-            model = "deepseek-reasoner",
+            model = useReasoningModel ? "deepseek-reasoner" : "deepseek-chat",
             messages = messageList.ToArray(),
             stream = true
         };
@@ -300,6 +330,7 @@ public class DeepSeekService
                                 onContentChunk,
                                 onToolCall,
                                 onToolCompleted,
+                                useReasoningModel,
                                 toolCallDepth: MaxToolCallDepth + 1, // 超过最大深度，确保不再递归
                                 cancellationToken);
 
@@ -313,6 +344,7 @@ public class DeepSeekService
                             onContentChunk,
                             onToolCall,
                             onToolCompleted,
+                            useReasoningModel,
                             toolCallDepth: toolCallDepth + 1,
                             cancellationToken);
 

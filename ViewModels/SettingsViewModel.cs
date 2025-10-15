@@ -61,6 +61,11 @@ public partial class SettingsViewModel : PageBase
     public bool IsSearchSelected => SelectedCategory?.Id == "search";
 
     /// <summary>
+    /// 是否选中了AI设置类别
+    /// </summary>
+    public bool IsAISelected => SelectedCategory?.Id == "ai";
+
+    /// <summary>
     /// 所有可用的搜索服务商列表
     /// </summary>
     public List<SearchProviderItem> AvailableSearchProviders { get; }
@@ -93,6 +98,40 @@ public partial class SettingsViewModel : PageBase
     /// 是否选择了 SearxNG 搜索提供商（用于条件显示测试区域）
     /// </summary>
     public bool IsSearxNG => _appSettings.SearchProvider == SearchProvider.SearxNG;
+
+    /// <summary>
+    /// 是否启用深度思考（DeepSeek API）
+    /// </summary>
+    public bool EnableDeepThinking
+    {
+        get => _appSettings.EnableDeepThinking;
+        set
+        {
+            if (_appSettings.EnableDeepThinking != value)
+            {
+                _appSettings.EnableDeepThinking = value;
+                OnPropertyChanged();
+                Console.WriteLine($"[Settings] 深度思考已{(value ? "启用" : "禁用")}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 是否启用京东价格查询
+    /// </summary>
+    public bool EnableJDPriceQuery
+    {
+        get => _appSettings.EnableJDPriceQuery;
+        set
+        {
+            if (_appSettings.EnableJDPriceQuery != value)
+            {
+                _appSettings.EnableJDPriceQuery = value;
+                OnPropertyChanged();
+                Console.WriteLine($"[Settings] 京东价格查询已{(value ? "启用" : "禁用")}");
+            }
+        }
+    }
 
     /// <summary>
     /// SearxNG 实例列表
@@ -208,6 +247,13 @@ public partial class SettingsViewModel : PageBase
             },
             new SettingCategory
             {
+                Id = "ai",
+                Name = "AI设置",
+                Icon = PackIconMaterialKind.Brain,
+                Description = "配置AI相关功能和服务"
+            },
+            new SettingCategory
+            {
                 Id = "search",
                 Name = "联网搜索",
                 Icon = PackIconMaterialKind.CloudSearch,
@@ -237,6 +283,7 @@ public partial class SettingsViewModel : PageBase
     partial void OnSelectedCategoryChanged(SettingCategory? value)
     {
         OnPropertyChanged(nameof(IsAppearanceSelected));
+        OnPropertyChanged(nameof(IsAISelected));
         OnPropertyChanged(nameof(IsSearchSelected));
     }
 

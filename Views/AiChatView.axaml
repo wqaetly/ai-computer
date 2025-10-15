@@ -122,14 +122,38 @@
                     </ListBox.Styles>
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="models:ChatSession">
-                            <!-- 简化为单层布局 -->
-                            <TextBlock Text="{Binding Title}"
-                                       FontSize="13"
-                                       TextTrimming="CharacterEllipsis"
-                                       MaxLines="1"
-                                       VerticalAlignment="Center">
-                                <!-- 右键菜单 -->
-                                <TextBlock.ContextMenu>
+                            <Grid>
+                                <!-- 显示模式 -->
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="13"
+                                           TextTrimming="CharacterEllipsis"
+                                           MaxLines="1"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding !IsEditing}" />
+                                
+                                <!-- 编辑模式 -->
+                                <TextBox Text="{Binding Title}"
+                                         FontSize="13"
+                                         VerticalAlignment="Center"
+                                         IsVisible="{Binding IsEditing}"
+                                         BorderThickness="1"
+                                         Padding="4,2">
+                                    <TextBox.KeyBindings>
+                                        <KeyBinding Gesture="Enter"
+                                                    Command="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).FinishRenameCommand}"
+                                                    CommandParameter="{Binding}" />
+                                        <KeyBinding Gesture="Escape"
+                                                    Command="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).FinishRenameCommand}"
+                                                    CommandParameter="{Binding}" />
+                                    </TextBox.KeyBindings>
+                                </TextBox>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerTheme>
+                        <ControlTheme TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="ContextMenu">
+                                <Template>
                                     <ContextMenu>
                                         <MenuItem Header="重命名"
                                                   Command="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).RenameSessionCommand}"
@@ -139,10 +163,10 @@
                                                   Command="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).DeleteSessionCommand}"
                                                   CommandParameter="{Binding}" />
                                     </ContextMenu>
-                                </TextBlock.ContextMenu>
-                            </TextBlock>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
+                                </Template>
+                            </Setter>
+                        </ControlTheme>
+                    </ListBox.ItemContainerTheme>
                 </ListBox>
             </Grid>
         </Border>
@@ -254,7 +278,7 @@
                                 <Grid Margin="0,0,0,15">
                                     <!-- 用户消息 -->
                                     <StackPanel IsVisible="{Binding IsUser}" Margin="50,0,10,0">
-                                        <Border Background="{DynamicResource SukiPrimaryColor}"
+                                        <Border Background="#FF4A90E2"
                                                 CornerRadius="12"
                                                 Padding="15"
                                                 HorizontalAlignment="Right"
@@ -358,11 +382,13 @@
                                         <!-- 时间戳和状态 -->
                                         <StackPanel Orientation="Horizontal"
                                                    HorizontalAlignment="Left"
-                                                   Margin="15,5,0,0"
-                                                   Spacing="8">
+                                                   Margin="15,8,0,5"
+                                                   Spacing="8"
+                                                   MinHeight="25">
                                             <TextBlock Text="{Binding Timestamp, StringFormat='HH:mm:ss'}"
                                                       FontSize="11"
-                                                      Opacity="0.6" />
+                                                      Opacity="0.6"
+                                                      VerticalAlignment="Center" />
 
                                             <!-- AI 状态标识（仅非搜索结果显示） -->
                                             <TextBlock Text="{Binding StatusText}"
@@ -370,7 +396,11 @@
                                                       Opacity="0.7"
                                                       Foreground="{DynamicResource SukiPrimaryColor}"
                                                       FontWeight="Medium"
-                                                      IsVisible="{Binding ShowStatus}" />
+                                                      IsVisible="{Binding ShowStatus}"
+                                                      VerticalAlignment="Center"
+                                                      TextTrimming="CharacterEllipsis"
+                                                      MaxWidth="300"
+                                                      LineHeight="14" />
                                         </StackPanel>
                                     </StackPanel>
                                 </Grid>

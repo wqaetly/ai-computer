@@ -41,6 +41,18 @@ public partial class AppSettingsService : ObservableObject
     private SearchProvider _searchProvider = SearchProvider.Baidu; // 默认使用百度
 
     /// <summary>
+    /// 是否启用深度思考（DeepSeek API）
+    /// </summary>
+    [ObservableProperty]
+    private bool _enableDeepThinking = false; // 默认禁用
+
+    /// <summary>
+    /// 是否启用京东价格查询
+    /// </summary>
+    [ObservableProperty]
+    private bool _enableJDPriceQuery = false; // 默认禁用
+
+    /// <summary>
     /// 私有构造函数（单例模式）
     /// </summary>
     private AppSettingsService()
@@ -60,7 +72,9 @@ public partial class AppSettingsService : ObservableObject
         // 监听属性变更，自动保存
         PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(SearchProvider))
+            if (e.PropertyName == nameof(SearchProvider) ||
+                e.PropertyName == nameof(EnableDeepThinking) ||
+                e.PropertyName == nameof(EnableJDPriceQuery))
             {
                 _ = SaveSettingsAsync();
             }
@@ -86,7 +100,9 @@ public partial class AppSettingsService : ObservableObject
             if (settings != null)
             {
                 SearchProvider = settings.SearchProvider;
-                Console.WriteLine($"[AppSettings] 已加载配置: SearchProvider={SearchProvider}");
+                EnableDeepThinking = settings.EnableDeepThinking;
+                EnableJDPriceQuery = settings.EnableJDPriceQuery;
+                Console.WriteLine($"[AppSettings] 已加载配置: SearchProvider={SearchProvider}, EnableDeepThinking={EnableDeepThinking}, EnableJDPriceQuery={EnableJDPriceQuery}");
             }
         }
         catch (Exception ex)
@@ -104,7 +120,9 @@ public partial class AppSettingsService : ObservableObject
         {
             var settings = new AppSettingsData
             {
-                SearchProvider = SearchProvider
+                SearchProvider = SearchProvider,
+                EnableDeepThinking = EnableDeepThinking,
+                EnableJDPriceQuery = EnableJDPriceQuery
             };
 
             var options = new JsonSerializerOptions
@@ -140,4 +158,6 @@ public partial class AppSettingsService : ObservableObject
 internal class AppSettingsData
 {
     public SearchProvider SearchProvider { get; set; } = SearchProvider.Baidu; // 默认百度
+    public bool EnableDeepThinking { get; set; } = false; // 默认禁用深度思考
+    public bool EnableJDPriceQuery { get; set; } = false; // 默认禁用京东价格查询
 }

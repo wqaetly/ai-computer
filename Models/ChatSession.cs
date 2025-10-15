@@ -22,6 +22,12 @@ public partial class ChatSession : ObservableObject
     private string _title;
 
     /// <summary>
+    /// 是否正在编辑标题
+    /// </summary>
+    [ObservableProperty]
+    private bool _isEditing;
+
+    /// <summary>
     /// 消息列表
     /// </summary>
     public ObservableCollection<ChatMessage> Messages { get; } = new();
