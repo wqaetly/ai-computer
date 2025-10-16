@@ -199,34 +199,44 @@
             <!-- 内容区域 -->
             <Grid Grid.Row="1">
                 <!-- 拖拽覆盖层 -->
-                <Border IsVisible="{Binding IsDraggingImage}"
-                        Background="#CC000000"
-                        ZIndex="999">
+                <Grid IsVisible="{Binding IsDraggingImage}"
+                      ZIndex="999">
+                    <!-- 毛玻璃背景层 -->
+                    <ExperimentalAcrylicBorder IsHitTestVisible="False">
+                        <ExperimentalAcrylicBorder.Material>
+                            <ExperimentalAcrylicMaterial BackgroundSource="Digger"
+                                                         TintColor="Black"
+                                                         TintOpacity="0.3"
+                                                         MaterialOpacity="0.8" />
+                        </ExperimentalAcrylicBorder.Material>
+                    </ExperimentalAcrylicBorder>
+
+                    <!-- 清晰的前景提示UI -->
                     <Grid VerticalAlignment="Center"
-                          HorizontalAlignment="Center">
-                        <suki:GlassCard MaxWidth="400"
-                                        Padding="40,30">
-                            <StackPanel Spacing="15"
+                          HorizontalAlignment="Center"
+                          IsHitTestVisible="False">
+                        <suki:GlassCard MaxWidth="450"
+                                        Padding="50,40">
+                            <StackPanel Spacing="20"
                                         HorizontalAlignment="Center">
                                 <!-- 图标 -->
                                 <iconPacks:PackIconMaterial Kind="ImagePlus"
-                                                            Width="64"
-                                                            Height="64"
+                                                            Width="72"
+                                                            Height="72"
                                                             HorizontalAlignment="Center"
-                                                            Foreground="{DynamicResource SukiPrimaryColor}"
-                                                            Opacity="0.9" />
+                                                            Foreground="{DynamicResource SukiPrimaryColor}" />
 
                                 <!-- 主提示文字 -->
                                 <TextBlock Text="拖拽图片到此处"
-                                           FontSize="20"
+                                           FontSize="22"
                                            FontWeight="Bold"
                                            HorizontalAlignment="Center"
                                            Foreground="{DynamicResource SukiText}" />
 
                                 <!-- 副提示文字 -->
                                 <TextBlock Text="支持 PNG、JPG、JPEG、BMP、GIF、WebP 格式"
-                                           FontSize="13"
-                                           Opacity="0.7"
+                                           FontSize="14"
+                                           Opacity="0.75"
                                            HorizontalAlignment="Center"
                                            TextWrapping="Wrap"
                                            TextAlignment="Center"
@@ -234,7 +244,7 @@
                             </StackPanel>
                         </suki:GlassCard>
                     </Grid>
-                </Border>
+                </Grid>
 
                 <!-- 欢迎界面 -->
                 <Grid IsVisible="{Binding ShowWelcomeScreen}"
