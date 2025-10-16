@@ -165,42 +165,37 @@ public partial class AiChatViewModel : PageBase
     }
 
     /// <summary>
-    /// 处理粘贴的图片（调用OCR识别）
+    /// 处理粘贴的图片（保存为临时文件并以Markdown格式引用）
     /// </summary>
     public async Task HandlePastedImageAsync(Bitmap bitmap)
     {
         try
         {
-            // 显示正在识别的提示
-            Console.WriteLine("正在识别图片中的文字...");
-
-            // 调用OCR服务识别文字
-            var recognizedText = await _ocrService.RecognizeTextAsync(bitmap);
-
-            // 将识别结果添加到输入框
-            if (!string.IsNullOrWhiteSpace(recognizedText))
+            // 创建临时图片目录
+            var tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "AiComputer", "Images");
+            if (!System.IO.Directory.Exists(tempDir))
             {
-                // 如果输入框已有内容，在末尾添加识别结果
-                if (!string.IsNullOrWhiteSpace(InputMessage))
-                {
-                    InputMessage += "\n" + recognizedText;
-                }
-                else
-                {
-                    InputMessage = recognizedText;
-                }
+                System.IO.Directory.CreateDirectory(tempDir);
+            }
 
-                Console.WriteLine($"识别成功: {recognizedText}");
-            }
-            else
+            // 生成唯一的文件名
+            var fileName = $"pasted_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.png";
+            var filePath = System.IO.Path.Combine(tempDir, fileName);
+
+            // 保存Bitmap到文件
+            await Task.Run(() =>
             {
-                Console.WriteLine("未识别到文字");
-            }
+                bitmap.Save(filePath);
+            });
+
+            // 将图片路径以Markdown格式添加到输入框
+            HandleDraggedImagePath(filePath);
+
+            Console.WriteLine($"已保存粘贴的图片: {filePath}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"OCR识别失败: {ex.Message}");
-            // 可以在这里添加用户提示
+            Console.WriteLine($"处理粘贴图片失败: {ex.Message}");
         }
     }
 
@@ -213,10 +208,10 @@ public partial class AiChatViewModel : PageBase
         {
             // 获取文件名（不含路径）
             var fileName = System.IO.Path.GetFileName(imagePath);
-            
+
             // 构建Markdown格式的图片引用
             var markdownImage = $"![{fileName}]({imagePath})";
-            
+
             // 添加到输入框
             if (!string.IsNullOrWhiteSpace(InputMessage))
             {
@@ -227,12 +222,68 @@ public partial class AiChatViewModel : PageBase
             {
                 InputMessage = markdownImage;
             }
-            
+
             Console.WriteLine($"已添加图片引用: {markdownImage}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"处理拖拽图片路径失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 选择图片文件命令
+    /// </summary>
+    [RelayCommand]
+    private async Task SelectImageAsync()
+    {
+        try
+        {
+            // 获取顶层窗口
+            var topLevel = Avalonia.Application.Current?.ApplicationLifetime is
+                Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+
+            if (topLevel == null)
+            {
+                Console.WriteLine("无法获取主窗口");
+                return;
+            }
+
+            // 创建文件选择对话框
+            var storageProvider = topLevel.StorageProvider;
+
+            // 定义图片文件类型过滤器
+            var fileTypeFilter = new Avalonia.Platform.Storage.FilePickerFileType("图片文件")
+            {
+                Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.webp" },
+                MimeTypes = new[] { "image/*" }
+            };
+
+            var options = new Avalonia.Platform.Storage.FilePickerOpenOptions
+            {
+                Title = "选择图片文件",
+                AllowMultiple = false,
+                FileTypeFilter = new[] { fileTypeFilter }
+            };
+
+            // 打开文件选择对话框
+            var files = await storageProvider.OpenFilePickerAsync(options);
+
+            if (files.Count > 0)
+            {
+                var filePath = files[0].Path.LocalPath;
+
+                // 直接将图片路径以Markdown格式添加到输入框（和拖拽图片一样的处理）
+                HandleDraggedImagePath(filePath);
+
+                Console.WriteLine($"已选择图片文件: {filePath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"选择图片文件失败: {ex.Message}");
         }
     }
 

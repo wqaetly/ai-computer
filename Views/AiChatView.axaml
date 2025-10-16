@@ -466,12 +466,12 @@
                     BorderBrush="{DynamicResource SukiBorderBrush}"
                     BorderThickness="0,1,0,0"
                     Padding="20">
-                <Grid ColumnDefinitions="*,Auto">
+                <Grid ColumnDefinitions="*,Auto,Auto">
                     <!-- 文本输入框 -->
                     <TextBox Grid.Column="0"
                              Name="InputTextBox"
                              Text="{Binding InputMessage, Mode=TwoWay}"
-                             Watermark="输入您的硬件配置或装机需求... (支持粘贴图片进行文字识别，Ctrl+Enter 发送)"
+                             Watermark="输入您的硬件配置或装机需求... (支持粘贴/拖拽图片进行文字识别，或点击+选择图片，Ctrl+Enter 发送)"
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
                              MaxHeight="120"
@@ -481,8 +481,25 @@
                         </TextBox.KeyBindings>
                     </TextBox>
 
-                    <!-- 发送/停止按钮 -->
+                    <!-- 选择图片按钮 -->
                     <Button Grid.Column="1"
+                            Command="{Binding SelectImageCommand}"
+                            Classes="Basic"
+                            Padding="8"
+                            Width="36"
+                            Height="36"
+                            ToolTip.Tip="选择图片"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            BorderBrush="{DynamicResource SukiBorderBrush}"
+                            BorderThickness="1">
+                        <iconPacks:PackIconMaterial Kind="Plus"
+                                                    Width="20"
+                                                    Height="20" />
+                    </Button>
+
+                    <!-- 发送/停止按钮 -->
+                    <Button Grid.Column="2"
                             Content="{Binding SendButtonText}"
                             Command="{Binding SendOrStopCommand}"
                             suki:ButtonExtensions.ShowProgress="{Binding IsSending}"

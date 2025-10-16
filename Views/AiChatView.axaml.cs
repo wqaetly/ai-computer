@@ -59,11 +59,47 @@ public partial class AiChatView : UserControl
         try
         {
             var formats = await clipboard.GetFormatsAsync();
+            Console.WriteLine($"[AiChatView] 剪贴板格式: {string.Join(", ", formats)}");
 
-            // 检查剪贴板是否包含图片
+            // 优先检查是否有文件路径（从文件管理器复制的文件）
+            if (formats.Contains(DataFormats.Files))
+            {
+                Console.WriteLine("[AiChatView] 检测到文件路径");
+
+                // 尝试获取文件列表
+                var filesData = await clipboard.GetDataAsync(DataFormats.Files);
+                if (filesData is IEnumerable<IStorageItem> files)
+                {
+                    var fileList = files.ToList();
+                    if (fileList.Any())
+                    {
+                        var filePath = fileList.First().Path.LocalPath;
+                        var extension = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
+
+                        // 检查是否是图片文件
+                        if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" ||
+                            extension == ".bmp" || extension == ".gif" || extension == ".webp")
+                        {
+                            Console.WriteLine($"[AiChatView] 从剪贴板获取到图片文件路径: {filePath}");
+
+                            if (DataContext is AiChatViewModel viewModel)
+                            {
+                                viewModel.HandleDraggedImagePath(filePath);
+                            }
+
+                            e.Handled = true;
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // 如果没有文件路径，检查是否包含图片数据（从浏览器或其他应用复制的图片）
             if (formats.Contains("image/png") || formats.Contains("image/jpeg") ||
                 formats.Contains("image/bmp") || formats.Contains("Bitmap"))
             {
+                Console.WriteLine("[AiChatView] 检测到图片数据（无文件路径）");
+
                 // 获取图片数据
                 var data = await clipboard.GetDataAsync("Bitmap");
                 if (data is Bitmap bitmap)
@@ -80,7 +116,7 @@ public partial class AiChatView : UserControl
     }
 
     /// <summary>
-    /// 处理粘贴的图片
+    /// 处理粘贴的图片（无文件路径的情况）
     /// </summary>
     private async Task HandlePastedImageAsync(Bitmap bitmap)
     {
@@ -194,7 +230,8 @@ public partial class AiChatView : UserControl
                     var hasImage = fileNames.Any(fileName =>
                     {
                         var extension = System.IO.Path.GetExtension(fileName).ToLowerInvariant();
-                        var isImage = extension is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif" or ".webp";
+                        var isImage = extension == ".png" || extension == ".jpg" || extension == ".jpeg" ||
+                                      extension == ".bmp" || extension == ".gif" || extension == ".webp";
                         Console.WriteLine($"[AiChatView] 文件路径: {fileName}, 扩展名: {extension}, 是图片: {isImage}");
                         return isImage;
                     });
@@ -215,7 +252,8 @@ public partial class AiChatView : UserControl
             var hasImageFile = fileList.Any(file =>
             {
                 var extension = System.IO.Path.GetExtension(file.Path.LocalPath).ToLowerInvariant();
-                var isImage = extension is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif" or ".webp";
+                var isImage = extension == ".png" || extension == ".jpg" || extension == ".jpeg" ||
+                              extension == ".bmp" || extension == ".gif" || extension == ".webp";
                 Console.WriteLine($"[AiChatView] 文件: {file.Name}, 路径: {file.Path.LocalPath}, 扩展名: {extension}, 是图片: {isImage}");
                 return isImage;
             });
@@ -345,7 +383,8 @@ public partial class AiChatView : UserControl
                 Console.WriteLine($"[AiChatView] 处理文件: {filePath}, 扩展名: {extension}");
 
                 // 检查是否是图片文件
-                if (extension is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif" or ".webp")
+                if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" ||
+                    extension == ".bmp" || extension == ".gif" || extension == ".webp")
                 {
                     try
                     {
