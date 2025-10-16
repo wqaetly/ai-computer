@@ -10,7 +10,8 @@
              xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="AiComputer.Views.AiChatView"
-             x:DataType="vm:AiChatViewModel">
+             x:DataType="vm:AiChatViewModel"
+             DragDrop.AllowDrop="True">
 
     <Design.DataContext>
         <vm:AiChatViewModel />
@@ -172,7 +173,8 @@
         </Border>
 
         <!-- 右侧：对话内容区域 -->
-        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto"
+              Name="ChatContentGrid">
             <!-- 标题栏 -->
             <Border Grid.Row="0" Background="{DynamicResource SukiBackground}" Padding="20,15">
                 <Grid ColumnDefinitions="*,Auto">
@@ -196,6 +198,44 @@
 
             <!-- 内容区域 -->
             <Grid Grid.Row="1">
+                <!-- 拖拽覆盖层 -->
+                <Border IsVisible="{Binding IsDraggingImage}"
+                        Background="#CC000000"
+                        ZIndex="999">
+                    <Grid VerticalAlignment="Center"
+                          HorizontalAlignment="Center">
+                        <suki:GlassCard MaxWidth="400"
+                                        Padding="40,30">
+                            <StackPanel Spacing="15"
+                                        HorizontalAlignment="Center">
+                                <!-- 图标 -->
+                                <iconPacks:PackIconMaterial Kind="ImagePlus"
+                                                            Width="64"
+                                                            Height="64"
+                                                            HorizontalAlignment="Center"
+                                                            Foreground="{DynamicResource SukiPrimaryColor}"
+                                                            Opacity="0.9" />
+
+                                <!-- 主提示文字 -->
+                                <TextBlock Text="拖拽图片到此处"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           Foreground="{DynamicResource SukiText}" />
+
+                                <!-- 副提示文字 -->
+                                <TextBlock Text="支持 PNG、JPG、JPEG、BMP、GIF、WebP 格式"
+                                           FontSize="13"
+                                           Opacity="0.7"
+                                           HorizontalAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"
+                                           Foreground="{DynamicResource SukiText}" />
+                            </StackPanel>
+                        </suki:GlassCard>
+                    </Grid>
+                </Border>
+
                 <!-- 欢迎界面 -->
                 <Grid IsVisible="{Binding ShowWelcomeScreen}"
                       VerticalAlignment="Center"
@@ -419,8 +459,9 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <!-- 文本输入框 -->
                     <TextBox Grid.Column="0"
+                             Name="InputTextBox"
                              Text="{Binding InputMessage, Mode=TwoWay}"
-                             Watermark="输入您的硬件配置或装机需求... (支持多行输入，Ctrl+Enter 发送)"
+                             Watermark="输入您的硬件配置或装机需求... (支持粘贴图片进行文字识别，Ctrl+Enter 发送)"
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
                              MaxHeight="120"

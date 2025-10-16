@@ -9,6 +9,7 @@ using ai_computer.Services;
 using AiComputer.Models;
 using AiComputer.Services;
 using AiComputer.Services.Tools;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -26,6 +27,7 @@ public partial class AiChatViewModel : PageBase
     private readonly DeepSeekService _deepSeekService;
     private readonly HybridSearchService _searchService;
     private readonly JDRecommendToolHelper _jdRecommendHelper;
+    private readonly OcrService _ocrService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>
@@ -96,6 +98,12 @@ public partial class AiChatViewModel : PageBase
     private bool _isProgrammaticScroll = false;
 
     /// <summary>
+    /// 是否正在拖拽图片（用于显示拖拽覆盖层）
+    /// </summary>
+    [ObservableProperty]
+    private bool _isDraggingImage = false;
+
+    /// <summary>
     /// 构造函数
     /// </summary>
     public AiChatViewModel() : base("AI 聊天", PackIconMaterialKind.Chat, 0)
@@ -111,6 +119,11 @@ public partial class AiChatViewModel : PageBase
         var jdUnionService = new JDUnionService(httpClient);
         var jdRecommendService = new JDGoodsRecommendService(jdUnionService);
         _jdRecommendHelper = new JDRecommendToolHelper(jdRecommendService);
+
+        // 初始化OCR服务
+        _ocrService = new OcrService();
+        // 异步初始化OCR服务（不阻塞构造函数）
+        _ = _ocrService.InitializeAsync();
 
         // 注册工具
         RegisterTools();
@@ -139,11 +152,88 @@ public partial class AiChatViewModel : PageBase
         var jdRecommendService = new JDGoodsRecommendService(jdUnionService);
         _jdRecommendHelper = new JDRecommendToolHelper(jdRecommendService);
 
+        // 初始化OCR服务
+        _ocrService = new OcrService();
+        // 异步初始化OCR服务（不阻塞构造函数）
+        _ = _ocrService.InitializeAsync();
+
         // 注册工具
         RegisterTools();
 
         // 创建第一个默认会话
         CreateNewSession();
+    }
+
+    /// <summary>
+    /// 处理粘贴的图片（调用OCR识别）
+    /// </summary>
+    public async Task HandlePastedImageAsync(Bitmap bitmap)
+    {
+        try
+        {
+            // 显示正在识别的提示
+            Console.WriteLine("正在识别图片中的文字...");
+
+            // 调用OCR服务识别文字
+            var recognizedText = await _ocrService.RecognizeTextAsync(bitmap);
+
+            // 将识别结果添加到输入框
+            if (!string.IsNullOrWhiteSpace(recognizedText))
+            {
+                // 如果输入框已有内容，在末尾添加识别结果
+                if (!string.IsNullOrWhiteSpace(InputMessage))
+                {
+                    InputMessage += "\n" + recognizedText;
+                }
+                else
+                {
+                    InputMessage = recognizedText;
+                }
+
+                Console.WriteLine($"识别成功: {recognizedText}");
+            }
+            else
+            {
+                Console.WriteLine("未识别到文字");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"OCR识别失败: {ex.Message}");
+            // 可以在这里添加用户提示
+        }
+    }
+
+    /// <summary>
+    /// 处理拖拽的图片文件（以Markdown格式添加到输入框）
+    /// </summary>
+    public void HandleDraggedImagePath(string imagePath)
+    {
+        try
+        {
+            // 获取文件名（不含路径）
+            var fileName = System.IO.Path.GetFileName(imagePath);
+            
+            // 构建Markdown格式的图片引用
+            var markdownImage = $"![{fileName}]({imagePath})";
+            
+            // 添加到输入框
+            if (!string.IsNullOrWhiteSpace(InputMessage))
+            {
+                // 如果输入框已有内容，在末尾添加（换行）
+                InputMessage += "\n" + markdownImage;
+            }
+            else
+            {
+                InputMessage = markdownImage;
+            }
+            
+            Console.WriteLine($"已添加图片引用: {markdownImage}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"处理拖拽图片路径失败: {ex.Message}");
+        }
     }
 
     /// <summary>

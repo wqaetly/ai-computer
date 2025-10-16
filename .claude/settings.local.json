@@ -41,7 +41,10 @@
       "Bash(npx -y @mcp_router/cli@latest list-tools:*)",
       "Bash(del \"I:\\ai-computer\\ai-computer\\Behaviors\\AutoScrollBehavior.cs\")",
       "Bash(npx -y @mcp_router/cli@latest connect:*)",
-      "Read(//i/**)"
+      "Read(//i/**)",
+      "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/API/**)",
+      "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/Test/**)",
+      "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/OcrLib/**)"
     ],
     "deny": [],
     "ask": []
