@@ -44,7 +44,8 @@
       "Read(//i/**)",
       "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/API/**)",
       "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/Test/**)",
-      "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/OcrLib/**)"
+      "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/OcrLib/**)",
+      "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/**)"
     ],
     "deny": [],
     "ask": []

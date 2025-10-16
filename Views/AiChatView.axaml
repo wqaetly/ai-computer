@@ -334,7 +334,8 @@
                                                 HorizontalAlignment="Right"
                                                 MaxWidth="700">
                                             <!-- Markdown 渲染器 -->
-                                            <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
+                                            <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}"
+                                                                 ImageBasePath="/" />
                                         </Border>
                                         <TextBlock Text="{Binding Timestamp, StringFormat='HH:mm:ss'}"
                                                    FontSize="11"
@@ -383,7 +384,8 @@
                                                         BorderBrush="#30A3E6F5"
                                                         BorderThickness="0,1,0,0"
                                                         Padding="0,10,0,0">
-                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
+                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}"
+                                                                         ImageBasePath="/" />
                                                 </Border>
                                             </StackPanel>
                                         </Border>
@@ -415,7 +417,8 @@
                                                                           SizeChanged="ReasoningScrollViewer_OnSizeChanged"
                                                                           Tag="{Binding}">
                                                                 <!-- Markdown 渲染器 -->
-                                                                <md:MarkdownRenderer MarkdownBuilder="{Binding ReasoningContentBuilder}" />
+                                                                <md:MarkdownRenderer MarkdownBuilder="{Binding ReasoningContentBuilder}"
+                                                                                     ImageBasePath="/" />
                                                             </ScrollViewer>
                                                         </Border>
                                                     </StackPanel>
@@ -424,7 +427,8 @@
                                                 <!-- 回答内容 -->
                                                 <Border IsVisible="{Binding HasContent}">
                                                     <!-- Markdown 渲染器 -->
-                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
+                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}"
+                                                                         ImageBasePath="/" />
                                                 </Border>
                                             </StackPanel>
                                         </suki:GlassCard>
@@ -471,7 +475,7 @@
                     <TextBox Grid.Column="0"
                              Name="InputTextBox"
                              Text="{Binding InputMessage, Mode=TwoWay}"
-                             Watermark="输入您的硬件配置或装机需求... (支持粘贴/拖拽图片进行文字识别，或点击+选择图片，Ctrl+Enter 发送)"
+                             Watermark="输入您的硬件配置或装机需求... (支持拖拽图片进行文字识别，或点击+选择图片，Ctrl+Enter 发送)"
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
                              MaxHeight="120"
@@ -485,17 +489,22 @@
                     <Button Grid.Column="1"
                             Command="{Binding SelectImageCommand}"
                             Classes="Basic"
-                            Padding="8"
+                            Padding="0"
                             Width="36"
                             Height="36"
                             ToolTip.Tip="选择图片"
                             Margin="10,0,0,0"
                             VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             BorderBrush="{DynamicResource SukiBorderBrush}"
                             BorderThickness="1">
                         <iconPacks:PackIconMaterial Kind="Plus"
                                                     Width="20"
-                                                    Height="20" />
+                                                    Height="20"
+                                                    Opacity="0.6"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" />
                     </Button>
 
                     <!-- 发送/停止按钮 -->

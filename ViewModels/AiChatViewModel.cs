@@ -431,15 +431,18 @@ public partial class AiChatViewModel : PageBase
         var userMessage = InputMessage.Trim();
         InputMessage = string.Empty;
 
+        // 检测并处理图片OCR
+        var (displayContent, aiContent) = await ProcessImagesForOcrAsync(userMessage);
+
         // 添加用户消息
         var userMsg = new ChatMessage
         {
             Role = MessageRole.User,
-            Content = userMessage,
+            Content = displayContent, // UI显示带图片的原始内容
             Timestamp = DateTime.Now
         };
         // 将内容添加到 ContentBuilder 以便 Markdown 渲染
-        userMsg.ContentBuilder.Append(userMessage);
+        userMsg.ContentBuilder.Append(displayContent);
 
         // 等待用户消息添加完成，确保消息历史准备正确
         await Dispatcher.UIThread.InvokeAsync(() =>
@@ -491,6 +494,21 @@ public partial class AiChatViewModel : PageBase
             var messageHistory = CurrentSession.Messages
                 .Where(m => m.Role != MessageRole.System)
                 .ToList();
+
+            // 如果用户消息包含图片，用OCR识别后的文本替换图片（仅用于传递给AI）
+            if (aiContent != displayContent)
+            {
+                // 找到刚添加的用户消息，临时创建一个带OCR文本的副本
+                var userMsgForAI = new ChatMessage
+                {
+                    Role = MessageRole.User,
+                    Content = aiContent, // 使用OCR识别后的文本
+                    Timestamp = userMsg.Timestamp
+                };
+
+                // 替换消息历史中的最后一条用户消息
+                messageHistory[messageHistory.Count - 1] = userMsgForAI;
+            }
 
             // 调用 API - 在后台线程执行
             await Task.Run(async () =>
@@ -921,5 +939,75 @@ public partial class AiChatViewModel : PageBase
         }
 
         return formattedOutput.TrimEnd();
+    }
+
+    /// <summary>
+    /// 处理消息中的图片，进行OCR识别
+    /// </summary>
+    /// <param name="message">原始消息</param>
+    /// <returns>(显示内容, AI内容) - 显示内容保留图片，AI内容用OCR文本替换图片</returns>
+    private async Task<(string displayContent, string aiContent)> ProcessImagesForOcrAsync(string message)
+    {
+        // 如果消息中没有图片，直接返回
+        if (!message.Contains("!["))
+        {
+            return (message, message);
+        }
+
+        // 使用正则表达式提取Markdown图片: ![alt](path)
+        var imagePattern = @"!\[([^\]]*)\]\(([^\)]+)\)";
+        var matches = System.Text.RegularExpressions.Regex.Matches(message, imagePattern);
+
+        if (matches.Count == 0)
+        {
+            return (message, message);
+        }
+
+        Console.WriteLine($"[OCR] 检测到 {matches.Count} 个图片，开始OCR识别...");
+
+        var aiContent = message;
+
+        // 对每个图片进行OCR识别
+        foreach (System.Text.RegularExpressions.Match match in matches)
+        {
+            var fullMatch = match.Value; // 完整的Markdown图片语法
+            var imagePath = match.Groups[2].Value; // 图片路径
+
+            try
+            {
+                // 检查文件是否存在
+                if (!System.IO.File.Exists(imagePath))
+                {
+                    Console.WriteLine($"[OCR] 图片文件不存在: {imagePath}");
+                    // 用提示文本替换
+                    aiContent = aiContent.Replace(fullMatch, $"[图片文件不存在: {imagePath}]");
+                    continue;
+                }
+
+                Console.WriteLine($"[OCR] 正在识别图片: {imagePath}");
+
+                // 加载图片
+                using var fileStream = System.IO.File.OpenRead(imagePath);
+                var bitmap = new Bitmap(fileStream);
+
+                // 进行OCR识别
+                var ocrText = await _ocrService.RecognizeTextAsync(bitmap);
+
+                Console.WriteLine($"[OCR] 识别结果:\n{ocrText}");
+
+                // 将Markdown图片替换为OCR识别的文本
+                var replacement = $"\n[图片内容识别结果]:\n{ocrText}\n";
+                aiContent = aiContent.Replace(fullMatch, replacement);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[OCR] 识别图片失败: {ex.Message}");
+                // 用错误提示替换
+                aiContent = aiContent.Replace(fullMatch, $"[图片识别失败: {ex.Message}]");
+            }
+        }
+
+        Console.WriteLine($"[OCR] OCR处理完成");
+        return (message, aiContent); // displayContent保留原始图片，aiContent使用OCR文本
     }
 }
