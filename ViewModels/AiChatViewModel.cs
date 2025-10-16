@@ -209,8 +209,12 @@ public partial class AiChatViewModel : PageBase
             // 获取文件名（不含路径）
             var fileName = System.IO.Path.GetFileName(imagePath);
 
-            // 构建Markdown格式的图片引用
-            var markdownImage = $"![{fileName}]({imagePath})";
+            // 将本地路径转换为 file:/// URI 格式，确保能被 MarkdownRenderer 正确识别为绝对 URI
+            // 这样可以避免 LiveMarkdown.Avalonia 将其作为相对路径处理
+            var imageUri = new Uri(System.IO.Path.GetFullPath(imagePath)).AbsoluteUri;
+
+            // 构建Markdown格式的图片引用（使用 file:/// URI）
+            var markdownImage = $"![{fileName}]({imageUri})";
 
             // 添加到输入框
             if (!string.IsNullOrWhiteSpace(InputMessage))
@@ -971,23 +975,31 @@ public partial class AiChatViewModel : PageBase
         foreach (System.Text.RegularExpressions.Match match in matches)
         {
             var fullMatch = match.Value; // 完整的Markdown图片语法
-            var imagePath = match.Groups[2].Value; // 图片路径
+            var imagePath = match.Groups[2].Value; // 图片路径（可能是 file:/// URI 或本地路径）
 
             try
             {
-                // 检查文件是否存在
-                if (!System.IO.File.Exists(imagePath))
+                // 如果是 file:/// URI，转换为本地路径
+                var localPath = imagePath;
+                if (Uri.TryCreate(imagePath, UriKind.Absolute, out var uri) && uri.Scheme == "file")
                 {
-                    Console.WriteLine($"[OCR] 图片文件不存在: {imagePath}");
+                    localPath = uri.LocalPath;
+                    Console.WriteLine($"[OCR] 转换 URI 到本地路径: {imagePath} -> {localPath}");
+                }
+
+                // 检查文件是否存在
+                if (!System.IO.File.Exists(localPath))
+                {
+                    Console.WriteLine($"[OCR] 图片文件不存在: {localPath}");
                     // 用提示文本替换
-                    aiContent = aiContent.Replace(fullMatch, $"[图片文件不存在: {imagePath}]");
+                    aiContent = aiContent.Replace(fullMatch, $"[图片文件不存在: {localPath}]");
                     continue;
                 }
 
-                Console.WriteLine($"[OCR] 正在识别图片: {imagePath}");
+                Console.WriteLine($"[OCR] 正在识别图片: {localPath}");
 
                 // 加载图片
-                using var fileStream = System.IO.File.OpenRead(imagePath);
+                using var fileStream = System.IO.File.OpenRead(localPath);
                 var bitmap = new Bitmap(fileStream);
 
                 // 进行OCR识别

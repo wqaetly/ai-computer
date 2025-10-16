@@ -334,8 +334,7 @@
                                                 HorizontalAlignment="Right"
                                                 MaxWidth="700">
                                             <!-- Markdown 渲染器 -->
-                                            <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}"
-                                                                 ImageBasePath="/" />
+                                            <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
                                         </Border>
                                         <TextBlock Text="{Binding Timestamp, StringFormat='HH:mm:ss'}"
                                                    FontSize="11"
@@ -384,8 +383,7 @@
                                                         BorderBrush="#30A3E6F5"
                                                         BorderThickness="0,1,0,0"
                                                         Padding="0,10,0,0">
-                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}"
-                                                                         ImageBasePath="/" />
+                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
                                                 </Border>
                                             </StackPanel>
                                         </Border>
@@ -417,8 +415,7 @@
                                                                           SizeChanged="ReasoningScrollViewer_OnSizeChanged"
                                                                           Tag="{Binding}">
                                                                 <!-- Markdown 渲染器 -->
-                                                                <md:MarkdownRenderer MarkdownBuilder="{Binding ReasoningContentBuilder}"
-                                                                                     ImageBasePath="/" />
+                                                                <md:MarkdownRenderer MarkdownBuilder="{Binding ReasoningContentBuilder}" />
                                                             </ScrollViewer>
                                                         </Border>
                                                     </StackPanel>
@@ -427,8 +424,7 @@
                                                 <!-- 回答内容 -->
                                                 <Border IsVisible="{Binding HasContent}">
                                                     <!-- Markdown 渲染器 -->
-                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}"
-                                                                         ImageBasePath="/" />
+                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
                                                 </Border>
                                             </StackPanel>
                                         </suki:GlassCard>
