@@ -5,6 +5,7 @@
              xmlns:converters="using:AiComputer.Converters"
              xmlns:suki="clr-namespace:SukiUI;assembly=SukiUI"
              xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:md="clr-namespace:LiveMarkdown.Avalonia;assembly=LiveMarkdown.Avalonia"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -55,5 +56,11 @@
 
         <!-- LiveMarkdown 样式 -->
         <StyleInclude Source="avares://LiveMarkdown.Avalonia/Styles.axaml"/>
+
+        <!-- 自定义 LiveMarkdown 样式 - 控制图片大小 -->
+        <Style Selector="md|MarkdownRenderer Image.Link">
+            <Setter Property="MaxHeight" Value="80"/>
+            <Setter Property="MaxWidth" Value="80"/>
+        </Style>
     </Application.Styles>
 </Application>

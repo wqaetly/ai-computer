@@ -39,10 +39,32 @@ public partial class SettingsViewModel : PageBase
     public IAvaloniaReadOnlyList<SukiColorTheme> AvailableColors { get; }
 
     /// <summary>
+    /// 可用的语言列表
+    /// </summary>
+    public List<LanguageInfo> AvailableLanguages { get; }
+
+    /// <summary>
     /// 是否为亮色主题
     /// </summary>
     [ObservableProperty]
     private bool _isLightTheme;
+
+    /// <summary>
+    /// 当前选择的语言
+    /// </summary>
+    public LanguageInfo? SelectedLanguage
+    {
+        get => AvailableLanguages.FirstOrDefault(l => l.Code == _appSettings.Language);
+        set
+        {
+            if (value != null && _appSettings.Language != value.Code)
+            {
+                _appSettings.Language = value.Code;
+                OnPropertyChanged();
+                Console.WriteLine($"[Settings] 语言已更改为: {value.Code}");
+            }
+        }
+    }
 
     /// <summary>
     /// 当前选中的设置类别
@@ -112,23 +134,6 @@ public partial class SettingsViewModel : PageBase
                 _appSettings.EnableDeepThinking = value;
                 OnPropertyChanged();
                 Console.WriteLine($"[Settings] 深度思考已{(value ? "启用" : "禁用")}");
-            }
-        }
-    }
-
-    /// <summary>
-    /// 是否启用京东价格查询
-    /// </summary>
-    public bool EnableJDPriceQuery
-    {
-        get => _appSettings.EnableJDPriceQuery;
-        set
-        {
-            if (_appSettings.EnableJDPriceQuery != value)
-            {
-                _appSettings.EnableJDPriceQuery = value;
-                OnPropertyChanged();
-                Console.WriteLine($"[Settings] 京东价格查询已{(value ? "启用" : "禁用")}");
             }
         }
     }
@@ -211,7 +216,7 @@ public partial class SettingsViewModel : PageBase
     /// <summary>
     /// 构造函数
     /// </summary>
-    public SettingsViewModel() : base("设置", PackIconMaterialKind.Cog, 99)
+    public SettingsViewModel() : base(LocalizationManager.Instance.GetString("Settings.Title"), PackIconMaterialKind.Cog, 99)
     {
         _appSettings = AppSettingsService.Instance;
         _testService = new InstanceTestService();
@@ -219,6 +224,9 @@ public partial class SettingsViewModel : PageBase
         // 初始化主题相关属性
         AvailableColors = _theme.ColorThemes;
         IsLightTheme = _theme.ActiveBaseTheme == ThemeVariant.Light;
+
+        // 初始化语言列表
+        AvailableLanguages = LocalizationManager.Instance.SupportedLanguages;
 
         // 监听主题变更事件
         _theme.OnBaseThemeChanged += variant =>
@@ -232,6 +240,10 @@ public partial class SettingsViewModel : PageBase
                 OnPropertyChanged(nameof(SelectedSearchProviderItem));
                 OnPropertyChanged(nameof(IsSearxNG));
             }
+            else if (e.PropertyName == nameof(AppSettingsService.Language))
+            {
+                OnPropertyChanged(nameof(SelectedLanguage));
+            }
         };
 
         // 初始化搜索服务商列表
@@ -240,20 +252,20 @@ public partial class SettingsViewModel : PageBase
             new SearchProviderItem
             {
                 Provider = SearchProvider.Baidu,
-                DisplayName = "百度",
-                Description = "国内最流行的搜索引擎"
+                DisplayName = LocalizationManager.Instance.GetString("Settings.SearchProvider.Baidu"),
+                Description = LocalizationManager.Instance.GetString("Settings.SearchProvider.Baidu.Desc")
             },
             new SearchProviderItem
             {
                 Provider = SearchProvider.Bing,
-                DisplayName = "必应",
-                Description = "微软的搜索引擎"
+                DisplayName = LocalizationManager.Instance.GetString("Settings.SearchProvider.Bing"),
+                Description = LocalizationManager.Instance.GetString("Settings.SearchProvider.Bing.Desc")
             },
             new SearchProviderItem
             {
                 Provider = SearchProvider.SearxNG,
-                DisplayName = "SearxNG",
-                Description = "隐私友好的元搜索引擎，聚合多个搜索源"
+                DisplayName = LocalizationManager.Instance.GetString("Settings.SearchProvider.SearxNG"),
+                Description = LocalizationManager.Instance.GetString("Settings.SearchProvider.SearxNG.Desc")
             },
         };
 
@@ -263,22 +275,22 @@ public partial class SettingsViewModel : PageBase
             new ECommerceProviderItem
             {
                 Provider = ECommerceProvider.PinDuoDuo,
-                DisplayName = "拼多多",
-                Description = "性价比优先，适合推荐平价商品",
+                DisplayName = LocalizationManager.Instance.GetString("Settings.ECommerce.PDD"),
+                Description = LocalizationManager.Instance.GetString("Settings.ECommerce.PDD.Desc"),
                 Icon = PackIconMaterialKind.Shopping
             },
             new ECommerceProviderItem
             {
                 Provider = ECommerceProvider.JingDong,
-                DisplayName = "京东",
-                Description = "品质保证，适合推荐品牌商品",
+                DisplayName = LocalizationManager.Instance.GetString("Settings.ECommerce.JD"),
+                Description = LocalizationManager.Instance.GetString("Settings.ECommerce.JD.Desc"),
                 Icon = PackIconMaterialKind.Store
             },
             new ECommerceProviderItem
             {
                 Provider = ECommerceProvider.TaoBao,
-                DisplayName = "淘宝",
-                Description = "商品丰富（暂未接入）",
+                DisplayName = LocalizationManager.Instance.GetString("Settings.ECommerce.Taobao"),
+                Description = LocalizationManager.Instance.GetString("Settings.ECommerce.Taobao.Desc"),
                 Icon = PackIconMaterialKind.ShoppingOutline
             }
         };
@@ -289,34 +301,115 @@ public partial class SettingsViewModel : PageBase
             new SettingCategory
             {
                 Id = "appearance",
-                Name = "外观",
+                Name = LocalizationManager.Instance.GetString("Settings.Category.Appearance"),
                 Icon = PackIconMaterialKind.Palette,
-                Description = "自定义应用程序的外观和主题"
+                Description = LocalizationManager.Instance.GetString("Settings.Category.Appearance.Desc")
             },
             new SettingCategory
             {
                 Id = "ai",
-                Name = "AI设置",
+                Name = LocalizationManager.Instance.GetString("Settings.Category.AI"),
                 Icon = PackIconMaterialKind.Brain,
-                Description = "配置AI相关功能和服务"
+                Description = LocalizationManager.Instance.GetString("Settings.Category.AI.Desc")
             },
             new SettingCategory
             {
                 Id = "search",
-                Name = "联网搜索",
+                Name = LocalizationManager.Instance.GetString("Settings.Category.Search"),
                 Icon = PackIconMaterialKind.CloudSearch,
-                Description = "配置AI对话时使用的搜索服务"
+                Description = LocalizationManager.Instance.GetString("Settings.Category.Search.Desc")
             }
         };
 
         // 默认选中第一个类别
         SelectedCategory = Categories.FirstOrDefault();
 
+        // 监听语言变化事件
+        LocalizationManager.Instance.LanguageChanged += OnLanguageChanged;
+
         // 如果当前选择的是 SearxNG，自动加载实例列表
         if (IsSearxNG)
         {
             _ = LoadInstancesFromApiAsync();
         }
+    }
+
+    /// <summary>
+    /// 语言变化事件处理
+    /// </summary>
+    private void OnLanguageChanged(object? sender, string newLanguage)
+    {
+        // 更新页面标题
+        DisplayName = LocalizationManager.Instance.GetString("Settings.Title");
+
+        // 更新类别列表
+        foreach (var category in Categories)
+        {
+            switch (category.Id)
+            {
+                case "appearance":
+                    category.Name = LocalizationManager.Instance.GetString("Settings.Category.Appearance");
+                    category.Description = LocalizationManager.Instance.GetString("Settings.Category.Appearance.Desc");
+                    break;
+                case "ai":
+                    category.Name = LocalizationManager.Instance.GetString("Settings.Category.AI");
+                    category.Description = LocalizationManager.Instance.GetString("Settings.Category.AI.Desc");
+                    break;
+                case "search":
+                    category.Name = LocalizationManager.Instance.GetString("Settings.Category.Search");
+                    category.Description = LocalizationManager.Instance.GetString("Settings.Category.Search.Desc");
+                    break;
+            }
+        }
+
+        // 更新搜索服务商列表
+        foreach (var provider in AvailableSearchProviders)
+        {
+            switch (provider.Provider)
+            {
+                case SearchProvider.Baidu:
+                    provider.DisplayName = LocalizationManager.Instance.GetString("Settings.SearchProvider.Baidu");
+                    provider.Description = LocalizationManager.Instance.GetString("Settings.SearchProvider.Baidu.Desc");
+                    break;
+                case SearchProvider.Bing:
+                    provider.DisplayName = LocalizationManager.Instance.GetString("Settings.SearchProvider.Bing");
+                    provider.Description = LocalizationManager.Instance.GetString("Settings.SearchProvider.Bing.Desc");
+                    break;
+                case SearchProvider.SearxNG:
+                    provider.DisplayName = LocalizationManager.Instance.GetString("Settings.SearchProvider.SearxNG");
+                    provider.Description = LocalizationManager.Instance.GetString("Settings.SearchProvider.SearxNG.Desc");
+                    break;
+            }
+        }
+
+        // 更新电商平台供应商列表
+        foreach (var provider in AvailableECommerceProviders)
+        {
+            switch (provider.Provider)
+            {
+                case ECommerceProvider.PinDuoDuo:
+                    provider.DisplayName = LocalizationManager.Instance.GetString("Settings.ECommerce.PDD");
+                    provider.Description = LocalizationManager.Instance.GetString("Settings.ECommerce.PDD.Desc");
+                    break;
+                case ECommerceProvider.JingDong:
+                    provider.DisplayName = LocalizationManager.Instance.GetString("Settings.ECommerce.JD");
+                    provider.Description = LocalizationManager.Instance.GetString("Settings.ECommerce.JD.Desc");
+                    break;
+                case ECommerceProvider.TaoBao:
+                    provider.DisplayName = LocalizationManager.Instance.GetString("Settings.ECommerce.Taobao");
+                    provider.Description = LocalizationManager.Instance.GetString("Settings.ECommerce.Taobao.Desc");
+                    break;
+            }
+        }
+
+        // 更新测试按钮文本
+        TestButtonText = IsTesting
+            ? LocalizationManager.Instance.GetString("Settings.SearxNG.StopTest")
+            : LocalizationManager.Instance.GetString("Settings.SearxNG.StartTest");
+
+        // 强制刷新UI
+        OnPropertyChanged(nameof(SelectedSearchProviderItem));
+        OnPropertyChanged(nameof(SelectedECommerceProviderItem));
     }
 
     /// <summary>
@@ -491,7 +584,7 @@ public partial class SettingsViewModel : PageBase
 /// <summary>
 /// 设置类别模型
 /// </summary>
-public class SettingCategory
+public partial class SettingCategory : ObservableObject
 {
     /// <summary>
     /// 类别ID
@@ -501,7 +594,8 @@ public class SettingCategory
     /// <summary>
     /// 类别名称
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _name = string.Empty;
 
     /// <summary>
     /// 图标
@@ -511,13 +605,14 @@ public class SettingCategory
     /// <summary>
     /// 描述
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _description = string.Empty;
 }
 
 /// <summary>
 /// 搜索服务商项（用于UI显示）
 /// </summary>
-public class SearchProviderItem
+public partial class SearchProviderItem : ObservableObject
 {
     /// <summary>
     /// 服务商枚举值
@@ -527,18 +622,20 @@ public class SearchProviderItem
     /// <summary>
     /// 显示名称
     /// </summary>
-    public string DisplayName { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _displayName = string.Empty;
 
     /// <summary>
     /// 描述信息
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _description = string.Empty;
 }
 
 /// <summary>
 /// 电商平台供应商项（用于UI显示）
 /// </summary>
-public class ECommerceProviderItem
+public partial class ECommerceProviderItem : ObservableObject
 {
     /// <summary>
     /// 供应商枚举值
@@ -548,12 +645,14 @@ public class ECommerceProviderItem
     /// <summary>
     /// 显示名称
     /// </summary>
-    public string DisplayName { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _displayName = string.Empty;
 
     /// <summary>
     /// 描述信息
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _description = string.Empty;
 
     /// <summary>
     /// 图标

@@ -31,7 +31,7 @@
                         BorderBrush="{DynamicResource SukiBorderBrush}"
                         BorderThickness="0,0,0,1"
                         Padding="12,10">
-                    <TextBlock Text="设置类别"
+                    <TextBlock Text="{DynamicResource Settings.Categories}"
                                FontSize="13"
                                FontWeight="Bold"
                                VerticalAlignment="Center" />
@@ -139,7 +139,7 @@
 
                 <!-- 标题和描述 -->
                 <StackPanel Spacing="8">
-                    <TextBlock Text="{Binding SelectedCategory.Name, FallbackValue='设置'}"
+                    <TextBlock Text="{Binding SelectedCategory.Name, FallbackValue={DynamicResource Settings.Title}}"
                                FontSize="24"
                                FontWeight="Bold" />
                     <TextBlock Text="{Binding SelectedCategory.Description, FallbackValue=''}"
@@ -158,10 +158,10 @@
                         <StackPanel Spacing="15">
                             <!-- 设置项标题 -->
                             <StackPanel Spacing="5">
-                                <TextBlock Text="基础主题"
+                                <TextBlock Text="{DynamicResource Settings.Theme}"
                                            FontSize="15"
                                            FontWeight="SemiBold" />
-                                <TextBlock Text="选择亮色或暗色主题"
+                                <TextBlock Text="{DynamicResource Settings.Theme.Desc}"
                                            FontSize="12"
                                            Opacity="0.7"
                                            TextWrapping="Wrap" />
@@ -183,7 +183,7 @@
                                                    VerticalAlignment="Bottom"
                                                    FontWeight="DemiBold"
                                                    Foreground="#555555"
-                                                   Text="亮色模式" />
+                                                   Text="{DynamicResource Settings.Theme.Light}" />
                                     </Border>
                                 </RadioButton>
 
@@ -200,7 +200,7 @@
                                                    VerticalAlignment="Bottom"
                                                    FontWeight="DemiBold"
                                                    Foreground="#fafafa"
-                                                   Text="暗色模式" />
+                                                   Text="{DynamicResource Settings.Theme.Dark}" />
                                     </Border>
                                 </RadioButton>
                             </StackPanel>
@@ -212,10 +212,10 @@
                         <StackPanel Spacing="15">
                             <!-- 设置项标题 -->
                             <StackPanel Spacing="5">
-                                <TextBlock Text="颜色主题"
+                                <TextBlock Text="{DynamicResource Settings.ColorTheme}"
                                            FontSize="15"
                                            FontWeight="SemiBold" />
-                                <TextBlock Text="选择应用程序的主色调"
+                                <TextBlock Text="{DynamicResource Settings.ColorTheme.Desc}"
                                            FontSize="12"
                                            Opacity="0.7"
                                            TextWrapping="Wrap" />
@@ -248,6 +248,56 @@
                             </ItemsControl>
                         </StackPanel>
                     </suki:GlassCard>
+
+                    <!-- 语言选择 -->
+                    <suki:GlassCard IsVisible="{Binding IsAppearanceSelected}">
+                        <StackPanel Spacing="15">
+                            <!-- 设置项标题 -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="{DynamicResource Settings.Language}"
+                                           FontSize="15"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="{DynamicResource Settings.Language.Desc}"
+                                           FontSize="12"
+                                           Opacity="0.7"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <!-- 语言选择下拉框 -->
+                            <ComboBox ItemsSource="{Binding AvailableLanguages}"
+                                      SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch"
+                                      MinWidth="300">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate DataType="services:LanguageInfo">
+                                        <TextBlock Text="{Binding DisplayName}"
+                                                   FontSize="13"
+                                                   Padding="5" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <!-- 提示信息 -->
+                            <Border Background="{DynamicResource SukiCardBackground}"
+                                    BorderBrush="{DynamicResource SukiBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="12">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <iconPacks:PackIconMaterial Kind="CheckCircle"
+                                                                Width="16"
+                                                                Height="16"
+                                                                VerticalAlignment="Top"
+                                                                Margin="0,2,0,0"
+                                                                Foreground="{DynamicResource SukiGreen}" />
+                                    <TextBlock Text="{DynamicResource Settings.Language.Instant}"
+                                               FontSize="12"
+                                               Opacity="0.8"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </suki:GlassCard>
                 </StackPanel>
 
                 <!-- AI设置（仅当选中"AI设置"类别时显示） -->
@@ -257,10 +307,10 @@
                         <StackPanel Spacing="15">
                             <!-- 设置项标题 -->
                             <StackPanel Spacing="5">
-                                <TextBlock Text="深度思考"
+                                <TextBlock Text="{DynamicResource Settings.DeepThinking}"
                                            FontSize="15"
                                            FontWeight="SemiBold" />
-                                <TextBlock Text="启用后将使用 DeepSeek API 进行深度思考分析"
+                                <TextBlock Text="{DynamicResource Settings.DeepThinking.Desc}"
                                            FontSize="12"
                                            Opacity="0.7"
                                            TextWrapping="Wrap" />
@@ -268,8 +318,8 @@
 
                             <!-- 开关 -->
                             <ToggleSwitch IsChecked="{Binding EnableDeepThinking, Mode=TwoWay}"
-                                          OnContent="已启用"
-                                          OffContent="已禁用" />
+                                          OnContent="{DynamicResource Settings.DeepThinking.Enabled}"
+                                          OffContent="{DynamicResource Settings.DeepThinking.Disabled}" />
                         </StackPanel>
                     </suki:GlassCard>
 
@@ -278,10 +328,10 @@
                         <StackPanel Spacing="15">
                             <!-- 设置项标题 -->
                             <StackPanel Spacing="5">
-                                <TextBlock Text="价格查询服务"
+                                <TextBlock Text="{DynamicResource Settings.PriceQuery}"
                                            FontSize="15"
                                            FontWeight="SemiBold" />
-                                <TextBlock Text="选择商品推荐和价格查询时使用的电商平台"
+                                <TextBlock Text="{DynamicResource Settings.PriceQuery.Desc}"
                                            FontSize="12"
                                            Opacity="0.7"
                                            TextWrapping="Wrap" />
@@ -332,23 +382,26 @@
                                                                     VerticalAlignment="Top"
                                                                     Margin="0,2,0,0"
                                                                     Foreground="{DynamicResource SukiPrimaryColor}" />
-                                        <TextBlock Text="平台说明"
+                                        <TextBlock Text="{DynamicResource Settings.Platform.Info}"
                                                    FontSize="12"
                                                    FontWeight="SemiBold"
                                                    Foreground="{DynamicResource SukiPrimaryColor}" />
                                     </StackPanel>
                                     <TextBlock FontSize="11" Opacity="0.8" TextWrapping="Wrap">
                                         <Run Text="• " />
-                                        <Run Text="拼多多:" FontWeight="Bold" />
-                                        <Run Text=" 性价比高，优惠力度大，适合推荐平价商品" />
+                                        <Run Text="{DynamicResource Settings.ECommerce.PDD}" FontWeight="Bold" />
+                                        <Run Text=": " />
+                                        <Run Text="{DynamicResource Settings.Platform.PDD.Info}" />
                                         <LineBreak />
                                         <Run Text="• " />
-                                        <Run Text="京东:" FontWeight="Bold" />
-                                        <Run Text=" 品质保证，物流快速，适合推荐品牌商品（API审核中）" />
+                                        <Run Text="{DynamicResource Settings.ECommerce.JD}" FontWeight="Bold" />
+                                        <Run Text=": " />
+                                        <Run Text="{DynamicResource Settings.Platform.JD.Info}" />
                                         <LineBreak />
                                         <Run Text="• " />
-                                        <Run Text="淘宝:" FontWeight="Bold" />
-                                        <Run Text=" 商品种类丰富（暂未接入）" />
+                                        <Run Text="{DynamicResource Settings.ECommerce.Taobao}" FontWeight="Bold" />
+                                        <Run Text=": " />
+                                        <Run Text="{DynamicResource Settings.Platform.Taobao.Info}" />
                                     </TextBlock>
                                 </StackPanel>
                             </Border>
@@ -361,10 +414,10 @@
                     <StackPanel Spacing="15">
                         <!-- 设置项标题 -->
                         <StackPanel Spacing="5">
-                            <TextBlock Text="搜索服务提供商"
+                            <TextBlock Text="{DynamicResource Settings.SearchProvider}"
                                        FontSize="15"
                                        FontWeight="SemiBold" />
-                            <TextBlock Text="选择AI对话时使用的网络搜索服务"
+                            <TextBlock Text="{DynamicResource Settings.SearchProvider.Desc}"
                                        FontSize="12"
                                        Opacity="0.7"
                                        TextWrapping="Wrap" />
@@ -404,19 +457,23 @@
                                                                 VerticalAlignment="Top"
                                                                 Margin="0,2,0,0"
                                                                 Foreground="{DynamicResource SukiPrimaryColor}" />
-                                    <TextBlock Text="服务说明"
+                                    <TextBlock Text="{DynamicResource Settings.Service.Info}"
                                                FontSize="12"
                                                FontWeight="SemiBold"
                                                Foreground="{DynamicResource SukiPrimaryColor}" />
                                 </StackPanel>
                                 <TextBlock FontSize="11" Opacity="0.8" TextWrapping="Wrap">
                                     <Run Text="• " />
-                                    <Run Text="SearxNG:" FontWeight="Bold" />
-                                    <Run Text=" 无需额外配置，开箱即用，但不稳定" />
+                                    <Run Text="{DynamicResource Settings.SearchProvider.SearxNG}" FontWeight="Bold" />
+                                    <Run Text=": " />
+                                    <Run Text="{DynamicResource Settings.Service.SearxNG.Info}" />
                                     <LineBreak />
                                     <Run Text="• " />
-                                    <Run Text="必应/百度:" FontWeight="Bold" />
-                                    <Run Text=" 搜索能力尚可" />
+                                    <Run Text="{DynamicResource Settings.SearchProvider.Bing}" FontWeight="Bold" />
+                                    <Run Text="/" />
+                                    <Run Text="{DynamicResource Settings.SearchProvider.Baidu}" FontWeight="Bold" />
+                                    <Run Text=": " />
+                                    <Run Text="{DynamicResource Settings.Service.BingBaidu.Info}" />
                                 </TextBlock>
                             </StackPanel>
                         </Border>
@@ -434,10 +491,10 @@
                     <StackPanel Spacing="15">
                         <!-- 标题和说明 -->
                         <StackPanel Spacing="5">
-                            <TextBlock Text="SearxNG 实例测试"
+                            <TextBlock Text="{DynamicResource Settings.SearxNG.Test}"
                                        FontSize="15"
                                        FontWeight="SemiBold" />
-                            <TextBlock Text="从 searx.space/data/instances.json 获取实例列表并测试可用性"
+                            <TextBlock Text="{DynamicResource Settings.SearxNG.Test.Desc}"
                                        FontSize="12"
                                        Opacity="0.7"
                                        TextWrapping="Wrap" />
@@ -446,7 +503,7 @@
                         <!-- 统计信息 -->
                         <Grid ColumnDefinitions="*,*,*,*">
                             <StackPanel Grid.Column="0" HorizontalAlignment="Center" Spacing="4">
-                                <TextBlock Text="总数"
+                                <TextBlock Text="{DynamicResource Settings.SearxNG.Total}"
                                            FontSize="12"
                                            Opacity="0.6"
                                            HorizontalAlignment="Center" />
@@ -457,7 +514,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="4">
-                                <TextBlock Text="可用"
+                                <TextBlock Text="{DynamicResource Settings.SearxNG.Available}"
                                            FontSize="12"
                                            Opacity="0.6"
                                            HorizontalAlignment="Center" />
@@ -469,7 +526,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" HorizontalAlignment="Center" Spacing="4">
-                                <TextBlock Text="不可用"
+                                <TextBlock Text="{DynamicResource Settings.SearxNG.Unavailable}"
                                            FontSize="12"
                                            Opacity="0.6"
                                            HorizontalAlignment="Center" />
@@ -481,7 +538,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="3" HorizontalAlignment="Center" Spacing="4">
-                                <TextBlock Text="超时"
+                                <TextBlock Text="{DynamicResource Settings.SearxNG.Timeout}"
                                            FontSize="12"
                                            Opacity="0.6"
                                            HorizontalAlignment="Center" />
@@ -526,7 +583,7 @@
                                                                 Width="16"
                                                                 Height="16"
                                                                 VerticalAlignment="Center" />
-                                    <TextBlock Text="重新加载"
+                                    <TextBlock Text="{DynamicResource Settings.SearxNG.Reload}"
                                                VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>

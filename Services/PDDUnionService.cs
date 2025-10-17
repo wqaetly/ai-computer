@@ -45,7 +45,7 @@ public class PDDUnionService
                 request.Pid = _config.Pid;
             }
 
-            // 构建请求参数（Search2不需要access_token）
+            // 构建请求参数
             var parameters = new Dictionary<string, string>
             {
                 { "type", method },
@@ -104,6 +104,7 @@ public class PDDUnionService
                 $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}"));
             var requestUrl = $"{_config.ApiBaseUrl}?{queryString}";
 
+            Console.WriteLine($"[PDDUnion] 使用API: {method}");
             Console.WriteLine($"[PDDUnion] 请求URL: {requestUrl}");
 
             // 发送请求

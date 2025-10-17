@@ -45,7 +45,11 @@
       "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/API/**)",
       "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/Test/**)",
       "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/OcrLib/**)",
-      "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/**)"
+      "Read(//h/GameProject/ProjectB/Unity/Assets/Plugins/OCR/**)",
+      "Bash(del \"I:\\ai-computer\\ai-computer\\Services\\Tools\\PDDApiCompareTool.cs\")",
+      "Bash(dotnet list:*)",
+      "Bash(Select-String \"error|warning\")",
+      "Bash(dotnet publish:*)"
     ],
     "deny": [],
     "ask": []

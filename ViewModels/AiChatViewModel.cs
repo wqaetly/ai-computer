@@ -15,6 +15,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IconPacks.Avalonia;
 using IconPacks.Avalonia.Material;
+using LiveMarkdown.Avalonia;
 using SukiUI.Dialogs;
 
 namespace AiComputer.ViewModels;
@@ -27,6 +28,7 @@ public partial class AiChatViewModel : PageBase
     private readonly DeepSeekService _deepSeekService;
     private readonly HybridSearchService _searchService;
     private readonly JDRecommendToolHelper _jdRecommendHelper;
+    private readonly PDDRecommendToolHelper _pddRecommendHelper;
     private readonly OcrService _ocrService;
     private CancellationTokenSource? _cancellationTokenSource;
 
@@ -66,10 +68,18 @@ public partial class AiChatViewModel : PageBase
     [NotifyPropertyChangedFor(nameof(SendButtonText))]
     private bool _isSending;
 
+    partial void OnIsSendingChanged(bool value)
+    {
+        // 当发送状态改变时，更新按钮文本
+        OnPropertyChanged(nameof(SendButtonText));
+    }
+
     /// <summary>
     /// 发送按钮文字（根据状态动态变化）
     /// </summary>
-    public string SendButtonText => IsSending ? "停止" : "发送";
+    public string SendButtonText => IsSending
+        ? LocalizationManager.Instance.GetString("Chat.Stop")
+        : LocalizationManager.Instance.GetString("Chat.Send");
 
     /// <summary>
     /// 是否显示欢迎界面（没有消息时显示）
@@ -106,7 +116,7 @@ public partial class AiChatViewModel : PageBase
     /// <summary>
     /// 构造函数
     /// </summary>
-    public AiChatViewModel() : base("AI 聊天", PackIconMaterialKind.Chat, 0)
+    public AiChatViewModel() : base(LocalizationManager.Instance.GetString("Chat.Title"), PackIconMaterialKind.Chat, 0)
     {
         // 使用提供的 API Key
         _deepSeekService = new DeepSeekService("sk-e8ec7e0c860d4b7d98ffc4212ab2c138");
@@ -120,6 +130,11 @@ public partial class AiChatViewModel : PageBase
         var jdRecommendService = new JDGoodsRecommendService(jdUnionService);
         _jdRecommendHelper = new JDRecommendToolHelper(jdRecommendService);
 
+        // 初始化拼多多推荐服务
+        var pddUnionService = new PDDUnionService(httpClient);
+        var pddRecommendService = new PDDGoodsRecommendService(pddUnionService);
+        _pddRecommendHelper = new PDDRecommendToolHelper(pddRecommendService);
+
         // 初始化OCR服务
         _ocrService = new OcrService();
         // 异步初始化OCR服务（不阻塞构造函数）
@@ -127,6 +142,9 @@ public partial class AiChatViewModel : PageBase
 
         // 注册工具
         RegisterTools();
+
+        // 监听语言变化事件
+        LocalizationManager.Instance.LanguageChanged += OnLanguageChanged;
 
         // 创建第一个默认会话
         CreateNewSession();
@@ -136,7 +154,7 @@ public partial class AiChatViewModel : PageBase
     /// 构造函数（支持依赖注入）
     /// </summary>
     /// <param name="dialogManager">对话框管理器</param>
-    public AiChatViewModel(ISukiDialogManager dialogManager) : base("AI 聊天", PackIconMaterialKind.Chat, 0)
+    public AiChatViewModel(ISukiDialogManager dialogManager) : base(LocalizationManager.Instance.GetString("Chat.Title"), PackIconMaterialKind.Chat, 0)
     {
         _dialogManager = dialogManager;
 
@@ -152,6 +170,11 @@ public partial class AiChatViewModel : PageBase
         var jdRecommendService = new JDGoodsRecommendService(jdUnionService);
         _jdRecommendHelper = new JDRecommendToolHelper(jdRecommendService);
 
+        // 初始化拼多多推荐服务
+        var pddUnionService = new PDDUnionService(httpClient);
+        var pddRecommendService = new PDDGoodsRecommendService(pddUnionService);
+        _pddRecommendHelper = new PDDRecommendToolHelper(pddRecommendService);
+
         // 初始化OCR服务
         _ocrService = new OcrService();
         // 异步初始化OCR服务（不阻塞构造函数）
@@ -159,6 +182,9 @@ public partial class AiChatViewModel : PageBase
 
         // 注册工具
         RegisterTools();
+
+        // 监听语言变化事件
+        LocalizationManager.Instance.LanguageChanged += OnLanguageChanged;
 
         // 创建第一个默认会话
         CreateNewSession();
@@ -292,7 +318,7 @@ public partial class AiChatViewModel : PageBase
     }
 
     /// <summary>
-    /// 注册所有可用工具（根据设置动态注册）
+    /// 注册所有可用工具
     /// </summary>
     private void RegisterTools()
     {
@@ -304,20 +330,23 @@ public partial class AiChatViewModel : PageBase
         });
         _deepSeekService.RegisterTool(webSearchTool);
 
-        // 仅在启用京东价格查询时注册京东商品推荐工具
-        if (AppSettingsService.Instance.EnableJDPriceQuery)
-        {
-            var jdProductTool = new JDProductRecommendTool(async (keyword, minPrice, maxPrice, count) =>
+        // 注册统一商品推荐工具（根据配置动态路由到不同电商平台）
+        var unifiedProductTool = new UnifiedProductRecommendTool(
+            // 京东推荐函数
+            async (keyword, minPrice, maxPrice, count) =>
             {
                 return await _jdRecommendHelper.RecommendAndFormatAsync(keyword, minPrice, maxPrice, count);
-            });
-            _deepSeekService.RegisterTool(jdProductTool);
-            Console.WriteLine("[AiChat] 京东商品推荐工具已注册");
-        }
-        else
-        {
-            Console.WriteLine("[AiChat] 京东商品推荐工具未注册（功能已禁用）");
-        }
+            },
+            // 拼多多推荐函数
+            async (keyword, minPrice, maxPrice, count) =>
+            {
+                return await _pddRecommendHelper.RecommendAndFormatAsync(keyword, minPrice, maxPrice, count);
+            }
+        );
+        _deepSeekService.RegisterTool(unifiedProductTool);
+
+        var provider = AppSettingsService.Instance.ECommerceProvider;
+        Console.WriteLine($"[AiChat] 统一商品推荐工具已注册（当前平台：{provider}）");
     }
 
     /// <summary>
@@ -338,7 +367,9 @@ public partial class AiChatViewModel : PageBase
     [RelayCommand]
     private void CreateNewSession()
     {
-        var newSession = new ChatSession($"对话 {Sessions.Count + 1}");
+        // 不传入标题参数，使用默认的多语言"新对话"/"New Chat"
+        // 当用户发送第一条消息后，会自动根据消息内容生成标题
+        var newSession = new ChatSession();
         Sessions.Add(newSession);
         CurrentSession = newSession;
 
@@ -396,14 +427,39 @@ public partial class AiChatViewModel : PageBase
     private void FinishRename(ChatSession session)
     {
         if (session == null) return;
-        
+
         // 退出编辑状态
         session.IsEditing = false;
-        
+
         // 如果标题为空，恢复默认标题
         if (string.IsNullOrWhiteSpace(session.Title))
         {
-            session.Title = "新对话";
+            session.Title = LocalizationManager.Instance.GetString("Chat.NewSessionName");
+        }
+    }
+
+    /// <summary>
+    /// 语言变化事件处理
+    /// </summary>
+    private void OnLanguageChanged(object? sender, string newLanguage)
+    {
+        // 更新页面标题
+        DisplayName = LocalizationManager.Instance.GetString("Chat.Title");
+
+        // 更新发送按钮文本
+        OnPropertyChanged(nameof(SendButtonText));
+
+        // 更新所有空会话的标题（没有消息的会话）
+        var newSessionName = LocalizationManager.Instance.GetString("Chat.NewSessionName");
+        foreach (var session in Sessions)
+        {
+            // 只更新空会话的标题（没有消息的会话）
+            if (session.IsEmpty)
+            {
+                session.Title = newSessionName;
+            }
+            // 刷新 PreviewText 属性（用于侧边栏显示多语言更新）
+            session.RefreshPreviewText();
         }
     }
 
@@ -578,13 +634,13 @@ public partial class AiChatViewModel : PageBase
                                 icon = "🔍";
                                 Console.WriteLine($"[UI] Tool called: web_search, query: {query}");
                             }
-                            else if (toolName == "recommend_jd_product")
+                            else if (toolName == "recommend_product")
                             {
                                 var keyword = argsRoot.GetProperty("keyword").GetString() ?? "";
                                 var count = argsRoot.TryGetProperty("count", out var countProp) ? countProp.GetInt32() : 3;
                                 displayText = $"正在推荐商品: {keyword} (数量: {count})";
                                 icon = "🛒";
-                                Console.WriteLine($"[UI] Tool called: recommend_jd_product, keyword: {keyword}, count: {count}");
+                                Console.WriteLine($"[UI] Tool called: recommend_product, keyword: {keyword}, count: {count}");
                             }
                             else
                             {
@@ -648,11 +704,11 @@ public partial class AiChatViewModel : PageBase
 
                                     // 根据工具类型格式化结果
                                     string formattedResults;
-                                    if (toolName == "recommend_jd_product")
+                                    if (toolName == "recommend_product")
                                     {
-                                        // 京东商品推荐结果已经格式化好，直接使用
+                                        // 商品推荐结果已经格式化好，直接使用
                                         formattedResults = ExtractToolResult(toolResults);
-                                        Console.WriteLine($"[UI] JD product recommendation completed");
+                                        Console.WriteLine($"[UI] Product recommendation completed");
                                     }
                                     else if (toolName == "web_search")
                                     {
@@ -767,6 +823,44 @@ public partial class AiChatViewModel : PageBase
         if (message != null)
         {
             message.IsSearchResultExpanded = !message.IsSearchResultExpanded;
+        }
+    }
+
+    /// <summary>
+    /// 处理Markdown链接点击事件
+    /// </summary>
+    [RelayCommand]
+    private async Task OpenHyperlinkAsync(InlineHyperlinkClickedEventArgs args)
+    {
+        try
+        {
+            // 检查是否是有效的http/https链接
+            if (args.HRef is { IsAbsoluteUri: true, Scheme: "http" or "https" } url)
+            {
+                // 获取TopLevel并使用Launcher打开URL
+                var topLevel = Avalonia.Application.Current?.ApplicationLifetime is
+                    Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+
+                if (topLevel?.Launcher is { } launcher)
+                {
+                    await launcher.LaunchUriAsync(url);
+                    Console.WriteLine($"[AiChat] 已打开链接: {url}");
+                }
+                else
+                {
+                    Console.WriteLine("[AiChat] 无法获取Launcher，链接打开失败");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"[AiChat] 无效的链接格式: {args.HRef}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[AiChat] 打开链接失败: {ex.Message}");
         }
     }
 

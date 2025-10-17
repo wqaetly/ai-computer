@@ -6,6 +6,7 @@ using System.Linq;
 using Avalonia.Markup.Xaml;
 using AiComputer.ViewModels;
 using AiComputer.Views;
+using AiComputer.Services;
 
 namespace AiComputer;
 
@@ -14,6 +15,10 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+
+        // 初始化多语言系统
+        var settings = AppSettingsService.Instance;
+        LocalizationManager.Instance.Initialize(settings.Language);
     }
 
     public override void OnFrameworkInitializationCompleted()

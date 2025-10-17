@@ -35,7 +35,7 @@ public class UnifiedECommerceService : IECommerceService
         string keyword,
         decimal? minPrice = null,
         decimal? maxPrice = null,
-        int maxCount = 3)
+        int maxCount = 10)
     {
         try
         {

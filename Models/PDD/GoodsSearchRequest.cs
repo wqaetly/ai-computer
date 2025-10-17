@@ -33,7 +33,7 @@ public class GoodsSearchRequest
     /// 13-按佣金金额升序排序;14-按佣金金额降序排序
     /// </summary>
     [JsonPropertyName("sort_type")]
-    public int SortType { get; set; } = 6; // 默认按销量降序
+    public int SortType { get; set; } = 2; // 默认按佣金比例降序
 
     /// <summary>
     /// 是否只返回优惠券的商品

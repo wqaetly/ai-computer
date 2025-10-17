@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using AiComputer.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AiComputer.Models;
@@ -61,7 +62,7 @@ public partial class ChatSession : ObservableObject
                 var content = firstUserMessage.Content;
                 return content.Length > 50 ? content.Substring(0, 50) + "..." : content;
             }
-            return "新对话";
+            return LocalizationManager.Instance.GetString("Chat.NewSessionName");
         }
     }
 
@@ -70,9 +71,17 @@ public partial class ChatSession : ObservableObject
     /// </summary>
     public bool IsEmpty => Messages.Count == 0;
 
-    public ChatSession(string title = "新对话")
+    /// <summary>
+    /// 刷新预览文本（用于语言切换时更新显示）
+    /// </summary>
+    public void RefreshPreviewText()
     {
-        _title = title;
+        OnPropertyChanged(nameof(PreviewText));
+    }
+
+    public ChatSession(string? title = null)
+    {
+        _title = title ?? LocalizationManager.Instance.GetString("Chat.NewSessionName");
 
         // 监听消息集合变化，自动更新标题和时间
         Messages.CollectionChanged += (_, _) =>
@@ -83,7 +92,8 @@ public partial class ChatSession : ObservableObject
             LastUpdated = DateTime.Now;
 
             // 如果标题还是默认的"新对话"，自动根据第一条消息更新标题
-            if (Title == "新对话" || string.IsNullOrWhiteSpace(Title))
+            var defaultTitle = LocalizationManager.Instance.GetString("Chat.NewSessionName");
+            if (Title == defaultTitle || string.IsNullOrWhiteSpace(Title))
             {
                 var firstUserMessage = Messages.FirstOrDefault(m => m.Role == MessageRole.User);
                 if (firstUserMessage != null && !string.IsNullOrWhiteSpace(firstUserMessage.Content))

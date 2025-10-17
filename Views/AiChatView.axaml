@@ -36,7 +36,7 @@
                         Padding="12,10">
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBlock Grid.Column="0"
-                                   Text="对话列表"
+                                   Text="{DynamicResource Chat.SessionList}"
                                    FontSize="13"
                                    FontWeight="Bold"
                                    VerticalAlignment="Center" />
@@ -48,7 +48,7 @@
                                 Padding="0"
                                 Width="18"
                                 Height="18"
-                                ToolTip.Tip="新建对话"
+                                ToolTip.Tip="{DynamicResource Chat.NewSession}"
                                 VerticalAlignment="Center"
                                 Margin="-2,0,0,0">
                             <iconPacks:PackIconMaterial Kind="Plus"
@@ -156,11 +156,11 @@
                             <Setter Property="ContextMenu">
                                 <Template>
                                     <ContextMenu>
-                                        <MenuItem Header="重命名"
+                                        <MenuItem Header="{DynamicResource Chat.Rename}"
                                                   Command="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).RenameSessionCommand}"
                                                   CommandParameter="{Binding}" />
                                         <Separator />
-                                        <MenuItem Header="删除"
+                                        <MenuItem Header="{DynamicResource Chat.Delete}"
                                                   Command="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).DeleteSessionCommand}"
                                                   CommandParameter="{Binding}" />
                                     </ContextMenu>
@@ -179,17 +179,17 @@
             <Border Grid.Row="0" Background="{DynamicResource SukiBackground}" Padding="20,15">
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="{Binding CurrentSession.Title, FallbackValue='玄机鉴 AI 分析师'}"
+                        <TextBlock Text="{Binding CurrentSession.Title, FallbackValue={DynamicResource Chat.Title}}"
                                    FontSize="20"
                                    FontWeight="Bold" />
-                        <TextBlock Text="专业电脑硬件配置分析与装机方案推荐"
+                        <TextBlock Text="{DynamicResource Chat.Subtitle}"
                                    FontSize="12"
                                    Opacity="0.7"
                                    Margin="0,4,0,0" />
                     </StackPanel>
 
                     <Button Grid.Column="1"
-                            Content="清空对话"
+                            Content="{DynamicResource Chat.ClearMessages}"
                             Command="{Binding ClearMessagesCommand}"
                             Classes="Basic"
                             VerticalAlignment="Center" />
@@ -227,14 +227,14 @@
                                                             Foreground="{DynamicResource SukiPrimaryColor}" />
 
                                 <!-- 主提示文字 -->
-                                <TextBlock Text="拖拽图片到此处"
+                                <TextBlock Text="{DynamicResource Chat.DragImageHere}"
                                            FontSize="22"
                                            FontWeight="Bold"
                                            HorizontalAlignment="Center"
                                            Foreground="{DynamicResource SukiText}" />
 
                                 <!-- 副提示文字 -->
-                                <TextBlock Text="支持 PNG、JPG、JPEG、BMP、GIF、WebP 格式"
+                                <TextBlock Text="{DynamicResource Chat.SupportedFormats}"
                                            FontSize="14"
                                            Opacity="0.75"
                                            HorizontalAlignment="Center"
@@ -253,14 +253,14 @@
                     <suki:GlassCard MaxWidth="500" Padding="30,25">
                         <StackPanel Spacing="12" HorizontalAlignment="Center">
                             <!-- 大标题 -->
-                            <TextBlock Text="⚙️ 玄机鉴 AI 分析师"
+                            <TextBlock Text="{DynamicResource Chat.Title}"
                                        FontSize="24"
                                        FontWeight="Bold"
                                        HorizontalAlignment="Center"
                                        Foreground="{DynamicResource SukiPrimaryColor}" />
 
                             <!-- 副标题 -->
-                            <TextBlock Text="专业电脑硬件配置分析与装机方案推荐"
+                            <TextBlock Text="{DynamicResource Chat.Subtitle}"
                                        FontSize="12"
                                        Opacity="0.8"
                                        HorizontalAlignment="Center"
@@ -278,39 +278,44 @@
                                            HorizontalAlignment="Left">
                                     <Run Text="&#10;" />
                                     <Run Text="🎯 " FontSize="14" />
-                                    <Run Text="核心功能" FontWeight="Bold" FontSize="14" />
+                                    <Run Text="{DynamicResource Chat.Welcome.CoreFeatures}" FontWeight="Bold" FontSize="14" />
                                     <Run Text="&#10;" />
                                     <Run Text="• " />
-                                    <Run Text="配置评估：" FontWeight="Bold" />
-                                    <Run Text="分析硬件配置，识别瓶颈" />
+                                    <Run Text="{DynamicResource Chat.Welcome.Feature1}" FontWeight="Bold" />
+                                    <Run Text="{DynamicResource Chat.Welcome.Feature1.Desc}" />
                                     <Run Text="&#10;" />
                                     <Run Text="• " />
-                                    <Run Text="装机方案：" FontWeight="Bold" />
-                                    <Run Text="提供配置清单和购买渠道" />
+                                    <Run Text="{DynamicResource Chat.Welcome.Feature2}" FontWeight="Bold" />
+                                    <Run Text="{DynamicResource Chat.Welcome.Feature2.Desc}" />
                                     <Run Text="&#10;" />
                                     <Run Text="• " />
-                                    <Run Text="实时价格：" FontWeight="Bold" />
-                                    <Run Text="查询京东、淘宝最新价格" />
+                                    <Run Text="{DynamicResource Chat.Welcome.Feature3}" FontWeight="Bold" />
+                                    <Run Text="{DynamicResource Chat.Welcome.Feature3.Desc}" />
                                     <Run Text="&#10;" />
                                     <Run Text="• " />
-                                    <Run Text="性能测试：" FontWeight="Bold" />
-                                    <Run Text="获取硬件性能测试数据" />
+                                    <Run Text="{DynamicResource Chat.Welcome.Feature4}" FontWeight="Bold" />
+                                    <Run Text="{DynamicResource Chat.Welcome.Feature4.Desc}" />
                                     <Run Text="&#10;&#10;" />
                                     <Run Text="💡 " FontSize="14" />
-                                    <Run Text="使用示例" FontWeight="Bold" FontSize="14" />
+                                    <Run Text="{DynamicResource Chat.Welcome.Examples}" FontWeight="Bold" FontSize="14" />
                                     <Run Text="&#10;" />
-                                    <Run Text="• RTX 4060 + i5-13400F 玩 4K 游戏会卡吗？" FontStyle="Italic" FontSize="12" />
+                                    <Run Text="• " />
+                                    <Run Text="{DynamicResource Chat.Welcome.Example1}" FontStyle="Italic" FontSize="12" />
                                     <Run Text="&#10;" />
-                                    <Run Text="• 8000 元预算帮我配一台编程建模主机" FontStyle="Italic" FontSize="12" />
+                                    <Run Text="• " />
+                                    <Run Text="{DynamicResource Chat.Welcome.Example2}" FontStyle="Italic" FontSize="12" />
                                     <Run Text="&#10;" />
-                                    <Run Text="• RTX 4070 Ti 和 RX 7900 XT 哪个性价比高？" FontStyle="Italic" FontSize="12" />
+                                    <Run Text="• " />
+                                    <Run Text="{DynamicResource Chat.Welcome.Example3}" FontStyle="Italic" FontSize="12" />
                                     <Run Text="&#10;&#10;" />
                                     <Run Text="🚀 " FontSize="14" />
-                                    <Run Text="开始对话" FontWeight="Bold" FontSize="14" />
+                                    <Run Text="{DynamicResource Chat.Welcome.GetStarted}" FontWeight="Bold" FontSize="14" />
                                     <Run Text="&#10;" />
-                                    <Run Text="输入配置或需求，按 " FontSize="12" />
-                                    <Run Text="Ctrl+Enter" FontWeight="Bold" Foreground="{DynamicResource SukiPrimaryColor}" FontSize="12" />
-                                    <Run Text=" 发送" FontSize="12" />
+                                    <Run Text="{DynamicResource Chat.Welcome.GetStarted.Desc}" FontSize="12" />
+                                    <Run Text=" " FontSize="12" />
+                                    <Run Text="{DynamicResource Chat.Welcome.SendKey}" FontWeight="Bold" Foreground="{DynamicResource SukiPrimaryColor}" FontSize="12" />
+                                    <Run Text=" " FontSize="12" />
+                                    <Run Text="{DynamicResource Chat.Welcome.SendAction}" FontSize="12" />
                                 </TextBlock>
                             </Border>
                         </StackPanel>
@@ -334,7 +339,8 @@
                                                 HorizontalAlignment="Right"
                                                 MaxWidth="700">
                                             <!-- Markdown 渲染器 -->
-                                            <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
+                                            <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}"
+                                                                 InlineHyperlinkCommand="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).OpenHyperlinkCommand}" />
                                         </Border>
                                         <TextBlock Text="{Binding Timestamp, StringFormat='HH:mm:ss'}"
                                                    FontSize="11"
@@ -383,7 +389,8 @@
                                                         BorderBrush="#30A3E6F5"
                                                         BorderThickness="0,1,0,0"
                                                         Padding="0,10,0,0">
-                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
+                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}"
+                                                                         InlineHyperlinkCommand="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).OpenHyperlinkCommand}" />
                                                 </Border>
                                             </StackPanel>
                                         </Border>
@@ -415,7 +422,8 @@
                                                                           SizeChanged="ReasoningScrollViewer_OnSizeChanged"
                                                                           Tag="{Binding}">
                                                                 <!-- Markdown 渲染器 -->
-                                                                <md:MarkdownRenderer MarkdownBuilder="{Binding ReasoningContentBuilder}" />
+                                                                <md:MarkdownRenderer MarkdownBuilder="{Binding ReasoningContentBuilder}"
+                                                                                     InlineHyperlinkCommand="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).OpenHyperlinkCommand}" />
                                                             </ScrollViewer>
                                                         </Border>
                                                     </StackPanel>
@@ -424,7 +432,8 @@
                                                 <!-- 回答内容 -->
                                                 <Border IsVisible="{Binding HasContent}">
                                                     <!-- Markdown 渲染器 -->
-                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}" />
+                                                    <md:MarkdownRenderer MarkdownBuilder="{Binding ContentBuilder}"
+                                                                         InlineHyperlinkCommand="{Binding $parent[UserControl].((vm:AiChatViewModel)DataContext).OpenHyperlinkCommand}" />
                                                 </Border>
                                             </StackPanel>
                                         </suki:GlassCard>
@@ -471,7 +480,7 @@
                     <TextBox Grid.Column="0"
                              Name="InputTextBox"
                              Text="{Binding InputMessage, Mode=TwoWay}"
-                             Watermark="输入您的硬件配置或装机需求... (支持拖拽图片进行文字识别，或点击+选择图片，Ctrl+Enter 发送)"
+                             Watermark="{DynamicResource Chat.InputPlaceholder}"
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
                              MaxHeight="120"
@@ -488,7 +497,7 @@
                             Padding="0"
                             Width="36"
                             Height="36"
-                            ToolTip.Tip="选择图片"
+                            ToolTip.Tip="{DynamicResource Chat.SelectImage}"
                             Margin="10,0,0,0"
                             VerticalAlignment="Center"
                             HorizontalContentAlignment="Center"

@@ -48,8 +48,8 @@ public class JDProductRecommendTool : ITool
     },
     ""count"": {
       ""type"": ""integer"",
-      ""description"": ""推荐商品数量，默认3个，最多5个"",
-      ""default"": 3
+      ""description"": ""推荐商品数量，默认10个，最多20个"",
+      ""default"": 10
     }
   },
   ""required"": [""keyword""]
@@ -89,11 +89,11 @@ public class JDProductRecommendTool : ITool
             maxPrice = maxPriceElement.GetDecimal();
         }
 
-        int count = 3;
+        int count = 10;
         if (arguments.TryGetProperty("count", out var countElement) &&
             countElement.ValueKind == JsonValueKind.Number)
         {
-            count = Math.Min(countElement.GetInt32(), 5); // 最多5个
+            count = Math.Min(countElement.GetInt32(), 20); // 最多20个
         }
 
         Console.WriteLine($"[JDProductRecommendTool] Recommending products: keyword='{keyword}', price=[{minPrice}-{maxPrice}], count={count}");

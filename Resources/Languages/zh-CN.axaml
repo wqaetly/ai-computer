@@ -1,0 +1,200 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- 通用 -->
+    <sys:String x:Key="App.Title">AI Computer - DeepSeek 智能助手</sys:String>
+    <sys:String x:Key="Common.Cancel">取消</sys:String>
+    <sys:String x:Key="Common.Confirm">确认</sys:String>
+    <sys:String x:Key="Common.Save">保存</sys:String>
+    <sys:String x:Key="Common.Delete">删除</sys:String>
+    <sys:String x:Key="Common.Edit">编辑</sys:String>
+    <sys:String x:Key="Common.Settings">设置</sys:String>
+
+    <!-- 主窗口 -->
+    <sys:String x:Key="MainWindow.NewChat">新建对话</sys:String>
+    <sys:String x:Key="MainWindow.ChatList">对话列表</sys:String>
+    <sys:String x:Key="MainWindow.ClearChat">清空对话</sys:String>
+
+    <!-- AI 聊天界面 -->
+    <sys:String x:Key="Chat.Title">AI装机大王</sys:String>
+    <sys:String x:Key="Chat.Subtitle">专业电脑硬件配置分析与装机方案推荐</sys:String>
+    <sys:String x:Key="Chat.InputPlaceholder">输入您的硬件配置或装机需求... (支持拖拽图片进行文字识别，或点击+选择图片，Ctrl+Enter 发送)</sys:String>
+    <sys:String x:Key="Chat.DragImageHere">拖拽图片到此处</sys:String>
+    <sys:String x:Key="Chat.SupportedFormats">支持 PNG、JPG、JPEG、BMP、GIF、WebP 格式</sys:String>
+    <sys:String x:Key="Chat.Send">发送</sys:String>
+    <sys:String x:Key="Chat.Stop">停止</sys:String>
+    <sys:String x:Key="Chat.Regenerate">重新生成</sys:String>
+    <sys:String x:Key="Chat.Copy">复制</sys:String>
+    <sys:String x:Key="Chat.Delete">删除</sys:String>
+    <sys:String x:Key="Chat.Rename">重命名</sys:String>
+    <sys:String x:Key="Chat.SessionList">对话列表</sys:String>
+    <sys:String x:Key="Chat.NewSession">新建对话</sys:String>
+    <sys:String x:Key="Chat.ClearMessages">清空对话</sys:String>
+    <sys:String x:Key="Chat.SelectImage">选择图片</sys:String>
+    <sys:String x:Key="Chat.SessionPrefix">对话</sys:String>
+    <sys:String x:Key="Chat.NewSessionName">新对话</sys:String>
+
+    <!-- 欢迎界面 -->
+    <sys:String x:Key="Chat.Welcome.CoreFeatures">核心功能</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature1">配置评估：</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature1.Desc">分析硬件配置，识别瓶颈</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature2">装机方案：</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature2.Desc">提供配置清单和购买渠道</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature3">实时价格：</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature3.Desc">查询京东、淘宝最新价格</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature4">性能测试：</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature4.Desc">获取硬件性能测试数据</sys:String>
+    <sys:String x:Key="Chat.Welcome.Examples">使用示例</sys:String>
+    <sys:String x:Key="Chat.Welcome.Example1">RTX 4060 + i5-13400F 玩 4K 游戏会卡吗？</sys:String>
+    <sys:String x:Key="Chat.Welcome.Example2">8000 元预算帮我配一台编程建模主机</sys:String>
+    <sys:String x:Key="Chat.Welcome.Example3">RTX 4070 Ti 和 RX 7900 XT 哪个性价比高？</sys:String>
+    <sys:String x:Key="Chat.Welcome.GetStarted">开始对话</sys:String>
+    <sys:String x:Key="Chat.Welcome.GetStarted.Desc">输入配置或需求，按</sys:String>
+    <sys:String x:Key="Chat.Welcome.SendKey">Ctrl+Enter</sys:String>
+    <sys:String x:Key="Chat.Welcome.SendAction">发送</sys:String>
+
+    <!-- 对话管理 -->
+    <sys:String x:Key="Dialog.RenameTitle">重命名对话</sys:String>
+    <sys:String x:Key="Dialog.RenamePrompt">请输入新的对话名称：</sys:String>
+    <sys:String x:Key="Dialog.SessionName">对话名称</sys:String>
+
+    <!-- 设置 -->
+    <sys:String x:Key="Settings.Title">设置</sys:String>
+    <sys:String x:Key="Settings.Categories">设置类别</sys:String>
+
+    <!-- 设置 - 外观 -->
+    <sys:String x:Key="Settings.Appearance">外观</sys:String>
+    <sys:String x:Key="Settings.Appearance.Desc">自定义应用程序的外观和主题</sys:String>
+    <sys:String x:Key="Settings.Theme">基础主题</sys:String>
+    <sys:String x:Key="Settings.Theme.Desc">选择亮色或暗色主题</sys:String>
+    <sys:String x:Key="Settings.Theme.Light">亮色模式</sys:String>
+    <sys:String x:Key="Settings.Theme.Dark">暗色模式</sys:String>
+    <sys:String x:Key="Settings.ColorTheme">颜色主题</sys:String>
+    <sys:String x:Key="Settings.ColorTheme.Desc">选择应用程序的主色调</sys:String>
+
+    <!-- 设置 - 语言 -->
+    <sys:String x:Key="Settings.Language">语言</sys:String>
+    <sys:String x:Key="Settings.Language.Desc">选择应用程序显示语言</sys:String>
+    <sys:String x:Key="Settings.Language.Select">选择语言</sys:String>
+    <sys:String x:Key="Settings.Language.Chinese">简体中文</sys:String>
+    <sys:String x:Key="Settings.Language.English">English</sys:String>
+    <sys:String x:Key="Settings.Language.Instant">语言切换将立即生效，无需重启应用程序</sys:String>
+
+    <!-- 设置 - AI 服务 -->
+    <sys:String x:Key="Settings.AI">AI 服务</sys:String>
+    <sys:String x:Key="Settings.AI.Desc">配置 AI 服务提供商和参数</sys:String>
+    <sys:String x:Key="Settings.AI.Provider">AI 服务商</sys:String>
+    <sys:String x:Key="Settings.AI.Provider.Desc">选择 AI 服务提供商</sys:String>
+    <sys:String x:Key="Settings.AI.ApiKey">API Key</sys:String>
+    <sys:String x:Key="Settings.AI.ApiKey.Desc">输入您的 API 密钥</sys:String>
+    <sys:String x:Key="Settings.AI.BaseUrl">Base URL</sys:String>
+    <sys:String x:Key="Settings.AI.BaseUrl.Desc">API 服务的基础 URL</sys:String>
+    <sys:String x:Key="Settings.AI.Model">模型</sys:String>
+    <sys:String x:Key="Settings.AI.Model.Desc">选择使用的 AI 模型</sys:String>
+    <sys:String x:Key="Settings.AI.Temperature">Temperature</sys:String>
+    <sys:String x:Key="Settings.AI.Temperature.Desc">控制回答的创造性（0-2）</sys:String>
+
+    <!-- 设置 - 搜索服务 -->
+    <sys:String x:Key="Settings.Search">搜索服务</sys:String>
+    <sys:String x:Key="Settings.Search.Desc">配置网页搜索服务提供商</sys:String>
+    <sys:String x:Key="Settings.Search.Provider">搜索引擎</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.Desc">选择搜索服务提供商</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.Baidu">百度</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.Baidu.Desc">百度搜索引擎</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.Bing">必应</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.Bing.Desc">微软必应搜索引擎</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.SearxNG">SearxNG</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.SearxNG.Desc">开源元搜索引擎</sys:String>
+    <sys:String x:Key="Settings.Search.SearxNG.Instance">实例地址</sys:String>
+    <sys:String x:Key="Settings.Search.SearxNG.Instance.Desc">SearxNG 实例的 URL</sys:String>
+    <sys:String x:Key="Settings.Search.SearxNG.Refresh">刷新实例列表</sys:String>
+    <sys:String x:Key="Settings.Search.SearxNG.Refreshing">正在从 searx.space/data/instances.json 获取...</sys:String>
+
+    <!-- 设置 - 电商服务 -->
+    <sys:String x:Key="Settings.Commerce">电商服务</sys:String>
+    <sys:String x:Key="Settings.Commerce.Desc">配置商品推荐和电商平台</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider">电商平台</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.Desc">选择电商服务提供商</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.PDD">拼多多</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.PDD.Desc">拼多多商品推荐</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.JD">京东</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.JD.Desc">京东商品推荐</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.Taobao">淘宝</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.Taobao.Desc">淘宝商品推荐</sys:String>
+
+    <!-- 设置 - OCR -->
+    <sys:String x:Key="Settings.OCR">OCR 识别</sys:String>
+    <sys:String x:Key="Settings.OCR.Desc">配置图像文字识别服务</sys:String>
+    <sys:String x:Key="Settings.OCR.ApiKey">OCR API Key</sys:String>
+    <sys:String x:Key="Settings.OCR.ApiKey.Desc">输入 OCR 服务的 API 密钥</sys:String>
+    <sys:String x:Key="Settings.OCR.SecretKey">OCR Secret Key</sys:String>
+    <sys:String x:Key="Settings.OCR.SecretKey.Desc">输入 OCR 服务的密钥</sys:String>
+
+    <!-- 设置 - 关于 -->
+    <sys:String x:Key="Settings.About">关于</sys:String>
+    <sys:String x:Key="Settings.About.Desc">应用程序信息和版本</sys:String>
+    <sys:String x:Key="Settings.About.Version">版本</sys:String>
+    <sys:String x:Key="Settings.About.Copyright">版权所有</sys:String>
+
+    <!-- 设置类别 -->
+    <sys:String x:Key="Settings.Category.Appearance">外观</sys:String>
+    <sys:String x:Key="Settings.Category.Appearance.Desc">自定义应用程序的外观和主题</sys:String>
+    <sys:String x:Key="Settings.Category.AI">AI设置</sys:String>
+    <sys:String x:Key="Settings.Category.AI.Desc">配置AI相关功能和服务</sys:String>
+    <sys:String x:Key="Settings.Category.Search">联网搜索</sys:String>
+    <sys:String x:Key="Settings.Category.Search.Desc">配置AI对话时使用的搜索服务</sys:String>
+
+    <!-- 搜索提供商 -->
+    <sys:String x:Key="Settings.SearchProvider.Baidu">百度</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.Baidu.Desc">国内最流行的搜索引擎</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.Bing">必应</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.Bing.Desc">微软的搜索引擎</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.SearxNG">SearxNG</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.SearxNG.Desc">隐私友好的元搜索引擎，聚合多个搜索源</sys:String>
+
+    <!-- 电商提供商 -->
+    <sys:String x:Key="Settings.ECommerce.PDD">拼多多</sys:String>
+    <sys:String x:Key="Settings.ECommerce.PDD.Desc">性价比优先，适合推荐平价商品</sys:String>
+    <sys:String x:Key="Settings.ECommerce.JD">京东</sys:String>
+    <sys:String x:Key="Settings.ECommerce.JD.Desc">品质保证，适合推荐品牌商品</sys:String>
+    <sys:String x:Key="Settings.ECommerce.Taobao">淘宝</sys:String>
+    <sys:String x:Key="Settings.ECommerce.Taobao.Desc">商品丰富（暂未接入）</sys:String>
+
+    <!-- AI 设置 -->
+    <sys:String x:Key="Settings.DeepThinking">深度思考</sys:String>
+    <sys:String x:Key="Settings.DeepThinking.Desc">启用后将使用 DeepSeek API 进行深度思考分析</sys:String>
+    <sys:String x:Key="Settings.DeepThinking.Enabled">已启用</sys:String>
+    <sys:String x:Key="Settings.DeepThinking.Disabled">已禁用</sys:String>
+    <sys:String x:Key="Settings.PriceQuery">价格查询服务</sys:String>
+    <sys:String x:Key="Settings.PriceQuery.Desc">选择商品推荐和价格查询时使用的电商平台</sys:String>
+
+    <!-- 搜索服务 -->
+    <sys:String x:Key="Settings.SearchProvider">搜索服务提供商</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.Desc">选择AI对话时使用的网络搜索服务</sys:String>
+
+    <!-- SearxNG 测试 -->
+    <sys:String x:Key="Settings.SearxNG.Test">SearxNG 实例测试</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Test.Desc">从 searx.space/data/instances.json 获取实例列表并测试可用性</sys:String>
+    <sys:String x:Key="Settings.SearxNG.StartTest">开始测试</sys:String>
+    <sys:String x:Key="Settings.SearxNG.StopTest">停止测试</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Reload">重新加载</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Total">总数</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Available">可用</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Unavailable">不可用</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Timeout">超时</sys:String>
+    <sys:String x:Key="Settings.SearxNG.ClickLoad">点击"加载实例"按钮从 searx.space 获取 SearxNG 实例列表</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Loading">正在从 searx.space/data/instances.json 获取实例列表...</sys:String>
+
+    <!-- 平台说明 -->
+    <sys:String x:Key="Settings.Platform.Info">平台说明</sys:String>
+    <sys:String x:Key="Settings.Platform.PDD.Info">性价比高，优惠力度大，适合推荐平价商品</sys:String>
+    <sys:String x:Key="Settings.Platform.JD.Info">品质保证，物流快速，适合推荐品牌商品（API审核中）</sys:String>
+    <sys:String x:Key="Settings.Platform.Taobao.Info">商品种类丰富（暂未接入）</sys:String>
+
+    <!-- 服务说明 -->
+    <sys:String x:Key="Settings.Service.Info">服务说明</sys:String>
+    <sys:String x:Key="Settings.Service.SearxNG.Info">无需额外配置，开箱即用，但不稳定</sys:String>
+    <sys:String x:Key="Settings.Service.BingBaidu.Info">搜索能力尚可</sys:String>
+
+</ResourceDictionary>

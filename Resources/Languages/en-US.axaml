@@ -1,0 +1,200 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- Common -->
+    <sys:String x:Key="App.Title">AI Computer - DeepSeek Assistant</sys:String>
+    <sys:String x:Key="Common.Cancel">Cancel</sys:String>
+    <sys:String x:Key="Common.Confirm">Confirm</sys:String>
+    <sys:String x:Key="Common.Save">Save</sys:String>
+    <sys:String x:Key="Common.Delete">Delete</sys:String>
+    <sys:String x:Key="Common.Edit">Edit</sys:String>
+    <sys:String x:Key="Common.Settings">Settings</sys:String>
+
+    <!-- Main Window -->
+    <sys:String x:Key="MainWindow.NewChat">New Chat</sys:String>
+    <sys:String x:Key="MainWindow.ChatList">Chat List</sys:String>
+    <sys:String x:Key="MainWindow.ClearChat">Clear Chat</sys:String>
+
+    <!-- AI Chat Interface -->
+    <sys:String x:Key="Chat.Title">AI Analyst</sys:String>
+    <sys:String x:Key="Chat.Subtitle">Professional PC hardware configuration analysis and build recommendations</sys:String>
+    <sys:String x:Key="Chat.InputPlaceholder">Enter your hardware configuration or build requirements... (Drag images for OCR, or click + to select, Ctrl+Enter to send)</sys:String>
+    <sys:String x:Key="Chat.DragImageHere">Drag image here</sys:String>
+    <sys:String x:Key="Chat.SupportedFormats">Supports PNG, JPG, JPEG, BMP, GIF, WebP formats</sys:String>
+    <sys:String x:Key="Chat.Send">Send</sys:String>
+    <sys:String x:Key="Chat.Stop">Stop</sys:String>
+    <sys:String x:Key="Chat.Regenerate">Regenerate</sys:String>
+    <sys:String x:Key="Chat.Copy">Copy</sys:String>
+    <sys:String x:Key="Chat.Delete">Delete</sys:String>
+    <sys:String x:Key="Chat.Rename">Rename</sys:String>
+    <sys:String x:Key="Chat.SessionList">Chat List</sys:String>
+    <sys:String x:Key="Chat.NewSession">New Chat</sys:String>
+    <sys:String x:Key="Chat.ClearMessages">Clear Chat</sys:String>
+    <sys:String x:Key="Chat.SelectImage">Select Image</sys:String>
+    <sys:String x:Key="Chat.SessionPrefix">Chat</sys:String>
+    <sys:String x:Key="Chat.NewSessionName">New Chat</sys:String>
+
+    <!-- Welcome Screen -->
+    <sys:String x:Key="Chat.Welcome.CoreFeatures">Core Features</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature1">Configuration Analysis:</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature1.Desc">Analyze hardware, identify bottlenecks</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature2">Build Recommendations:</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature2.Desc">Provide parts list and purchase channels</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature3">Real-time Pricing:</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature3.Desc">Query latest prices from JD, Taobao</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature4">Performance Testing:</sys:String>
+    <sys:String x:Key="Chat.Welcome.Feature4.Desc">Get hardware performance test data</sys:String>
+    <sys:String x:Key="Chat.Welcome.Examples">Usage Examples</sys:String>
+    <sys:String x:Key="Chat.Welcome.Example1">Will RTX 4060 + i5-13400F lag at 4K gaming?</sys:String>
+    <sys:String x:Key="Chat.Welcome.Example2">Build me a programming/modeling PC for $1000</sys:String>
+    <sys:String x:Key="Chat.Welcome.Example3">RTX 4070 Ti vs RX 7900 XT - better value?</sys:String>
+    <sys:String x:Key="Chat.Welcome.GetStarted">Get Started</sys:String>
+    <sys:String x:Key="Chat.Welcome.GetStarted.Desc">Enter configuration or requirements, press</sys:String>
+    <sys:String x:Key="Chat.Welcome.SendKey">Ctrl+Enter</sys:String>
+    <sys:String x:Key="Chat.Welcome.SendAction">to send</sys:String>
+
+    <!-- Dialog Management -->
+    <sys:String x:Key="Dialog.RenameTitle">Rename Chat</sys:String>
+    <sys:String x:Key="Dialog.RenamePrompt">Please enter a new chat name:</sys:String>
+    <sys:String x:Key="Dialog.SessionName">Chat Name</sys:String>
+
+    <!-- Settings -->
+    <sys:String x:Key="Settings.Title">Settings</sys:String>
+    <sys:String x:Key="Settings.Categories">Categories</sys:String>
+
+    <!-- Settings - Appearance -->
+    <sys:String x:Key="Settings.Appearance">Appearance</sys:String>
+    <sys:String x:Key="Settings.Appearance.Desc">Customize app appearance and theme</sys:String>
+    <sys:String x:Key="Settings.Theme">Base Theme</sys:String>
+    <sys:String x:Key="Settings.Theme.Desc">Choose light or dark theme</sys:String>
+    <sys:String x:Key="Settings.Theme.Light">Light Mode</sys:String>
+    <sys:String x:Key="Settings.Theme.Dark">Dark Mode</sys:String>
+    <sys:String x:Key="Settings.ColorTheme">Color Theme</sys:String>
+    <sys:String x:Key="Settings.ColorTheme.Desc">Select app primary color</sys:String>
+
+    <!-- Settings - Language -->
+    <sys:String x:Key="Settings.Language">Language</sys:String>
+    <sys:String x:Key="Settings.Language.Desc">Select application display language</sys:String>
+    <sys:String x:Key="Settings.Language.Select">Select Language</sys:String>
+    <sys:String x:Key="Settings.Language.Chinese">简体中文</sys:String>
+    <sys:String x:Key="Settings.Language.English">English</sys:String>
+    <sys:String x:Key="Settings.Language.Instant">Language changes take effect instantly without restart</sys:String>
+
+    <!-- Settings - AI Service -->
+    <sys:String x:Key="Settings.AI">AI Service</sys:String>
+    <sys:String x:Key="Settings.AI.Desc">Configure AI service provider and parameters</sys:String>
+    <sys:String x:Key="Settings.AI.Provider">AI Provider</sys:String>
+    <sys:String x:Key="Settings.AI.Provider.Desc">Select AI service provider</sys:String>
+    <sys:String x:Key="Settings.AI.ApiKey">API Key</sys:String>
+    <sys:String x:Key="Settings.AI.ApiKey.Desc">Enter your API key</sys:String>
+    <sys:String x:Key="Settings.AI.BaseUrl">Base URL</sys:String>
+    <sys:String x:Key="Settings.AI.BaseUrl.Desc">Base URL for API service</sys:String>
+    <sys:String x:Key="Settings.AI.Model">Model</sys:String>
+    <sys:String x:Key="Settings.AI.Model.Desc">Select AI model to use</sys:String>
+    <sys:String x:Key="Settings.AI.Temperature">Temperature</sys:String>
+    <sys:String x:Key="Settings.AI.Temperature.Desc">Control response creativity (0-2)</sys:String>
+
+    <!-- Settings - Search Service -->
+    <sys:String x:Key="Settings.Search">Search Service</sys:String>
+    <sys:String x:Key="Settings.Search.Desc">Configure web search service provider</sys:String>
+    <sys:String x:Key="Settings.Search.Provider">Search Engine</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.Desc">Select search service provider</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.Baidu">Baidu</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.Baidu.Desc">Baidu search engine</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.Bing">Bing</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.Bing.Desc">Microsoft Bing search engine</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.SearxNG">SearxNG</sys:String>
+    <sys:String x:Key="Settings.Search.Provider.SearxNG.Desc">Open-source meta search engine</sys:String>
+    <sys:String x:Key="Settings.Search.SearxNG.Instance">Instance URL</sys:String>
+    <sys:String x:Key="Settings.Search.SearxNG.Instance.Desc">URL of SearxNG instance</sys:String>
+    <sys:String x:Key="Settings.Search.SearxNG.Refresh">Refresh Instance List</sys:String>
+    <sys:String x:Key="Settings.Search.SearxNG.Refreshing">Fetching from searx.space/data/instances.json...</sys:String>
+
+    <!-- Settings - E-commerce Service -->
+    <sys:String x:Key="Settings.Commerce">E-commerce Service</sys:String>
+    <sys:String x:Key="Settings.Commerce.Desc">Configure product recommendations and e-commerce platforms</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider">E-commerce Platform</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.Desc">Select e-commerce service provider</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.PDD">Pinduoduo</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.PDD.Desc">Pinduoduo product recommendations</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.JD">JD.com</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.JD.Desc">JD.com product recommendations</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.Taobao">Taobao</sys:String>
+    <sys:String x:Key="Settings.Commerce.Provider.Taobao.Desc">Taobao product recommendations</sys:String>
+
+    <!-- Settings - OCR -->
+    <sys:String x:Key="Settings.OCR">OCR Recognition</sys:String>
+    <sys:String x:Key="Settings.OCR.Desc">Configure optical character recognition service</sys:String>
+    <sys:String x:Key="Settings.OCR.ApiKey">OCR API Key</sys:String>
+    <sys:String x:Key="Settings.OCR.ApiKey.Desc">Enter OCR service API key</sys:String>
+    <sys:String x:Key="Settings.OCR.SecretKey">OCR Secret Key</sys:String>
+    <sys:String x:Key="Settings.OCR.SecretKey.Desc">Enter OCR service secret key</sys:String>
+
+    <!-- Settings - About -->
+    <sys:String x:Key="Settings.About">About</sys:String>
+    <sys:String x:Key="Settings.About.Desc">Application information and version</sys:String>
+    <sys:String x:Key="Settings.About.Version">Version</sys:String>
+    <sys:String x:Key="Settings.About.Copyright">Copyright</sys:String>
+
+    <!-- Settings Categories -->
+    <sys:String x:Key="Settings.Category.Appearance">Appearance</sys:String>
+    <sys:String x:Key="Settings.Category.Appearance.Desc">Customize app appearance and theme</sys:String>
+    <sys:String x:Key="Settings.Category.AI">AI Settings</sys:String>
+    <sys:String x:Key="Settings.Category.AI.Desc">Configure AI features and services</sys:String>
+    <sys:String x:Key="Settings.Category.Search">Web Search</sys:String>
+    <sys:String x:Key="Settings.Category.Search.Desc">Configure search service for AI chat</sys:String>
+
+    <!-- Search Providers -->
+    <sys:String x:Key="Settings.SearchProvider.Baidu">Baidu</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.Baidu.Desc">Most popular search engine in China</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.Bing">Bing</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.Bing.Desc">Microsoft search engine</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.SearxNG">SearxNG</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.SearxNG.Desc">Privacy-friendly meta search engine aggregating multiple sources</sys:String>
+
+    <!-- E-commerce Providers -->
+    <sys:String x:Key="Settings.ECommerce.PDD">Pinduoduo</sys:String>
+    <sys:String x:Key="Settings.ECommerce.PDD.Desc">Best value, suitable for budget products</sys:String>
+    <sys:String x:Key="Settings.ECommerce.JD">JD.com</sys:String>
+    <sys:String x:Key="Settings.ECommerce.JD.Desc">Quality assured, suitable for brand products</sys:String>
+    <sys:String x:Key="Settings.ECommerce.Taobao">Taobao</sys:String>
+    <sys:String x:Key="Settings.ECommerce.Taobao.Desc">Rich products (not integrated yet)</sys:String>
+
+    <!-- AI Settings -->
+    <sys:String x:Key="Settings.DeepThinking">Deep Thinking</sys:String>
+    <sys:String x:Key="Settings.DeepThinking.Desc">Enable DeepSeek API for deep thinking analysis</sys:String>
+    <sys:String x:Key="Settings.DeepThinking.Enabled">Enabled</sys:String>
+    <sys:String x:Key="Settings.DeepThinking.Disabled">Disabled</sys:String>
+    <sys:String x:Key="Settings.PriceQuery">Price Query Service</sys:String>
+    <sys:String x:Key="Settings.PriceQuery.Desc">Select e-commerce platform for product recommendations and price queries</sys:String>
+
+    <!-- Search Service -->
+    <sys:String x:Key="Settings.SearchProvider">Search Service Provider</sys:String>
+    <sys:String x:Key="Settings.SearchProvider.Desc">Select web search service for AI chat</sys:String>
+
+    <!-- SearxNG Testing -->
+    <sys:String x:Key="Settings.SearxNG.Test">SearxNG Instance Testing</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Test.Desc">Fetch instance list from searx.space/data/instances.json and test availability</sys:String>
+    <sys:String x:Key="Settings.SearxNG.StartTest">Start Test</sys:String>
+    <sys:String x:Key="Settings.SearxNG.StopTest">Stop Test</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Reload">Reload</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Total">Total</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Available">Available</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Unavailable">Unavailable</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Timeout">Timeout</sys:String>
+    <sys:String x:Key="Settings.SearxNG.ClickLoad">Click "Load Instances" to fetch SearxNG instance list from searx.space</sys:String>
+    <sys:String x:Key="Settings.SearxNG.Loading">Fetching instance list from searx.space/data/instances.json...</sys:String>
+
+    <!-- Platform Info -->
+    <sys:String x:Key="Settings.Platform.Info">Platform Information</sys:String>
+    <sys:String x:Key="Settings.Platform.PDD.Info">Best value with great discounts, suitable for budget products</sys:String>
+    <sys:String x:Key="Settings.Platform.JD.Info">Quality assured with fast delivery, suitable for brand products (API under review)</sys:String>
+    <sys:String x:Key="Settings.Platform.Taobao.Info">Rich product variety (not integrated yet)</sys:String>
+
+    <!-- Service Info -->
+    <sys:String x:Key="Settings.Service.Info">Service Information</sys:String>
+    <sys:String x:Key="Settings.Service.SearxNG.Info">No additional configuration needed, ready to use, but unstable</sys:String>
+    <sys:String x:Key="Settings.Service.BingBaidu.Info">Decent search capabilities</sys:String>
+
+</ResourceDictionary>
