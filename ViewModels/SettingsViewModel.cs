@@ -134,6 +134,28 @@ public partial class SettingsViewModel : PageBase
     }
 
     /// <summary>
+    /// 所有可用的电商平台供应商列表
+    /// </summary>
+    public List<ECommerceProviderItem> AvailableECommerceProviders { get; }
+
+    /// <summary>
+    /// 当前选中的电商平台供应商项
+    /// </summary>
+    public ECommerceProviderItem? SelectedECommerceProviderItem
+    {
+        get => AvailableECommerceProviders.FirstOrDefault(p => p.Provider == _appSettings.ECommerceProvider);
+        set
+        {
+            if (value != null && _appSettings.ECommerceProvider != value.Provider)
+            {
+                _appSettings.ECommerceProvider = value.Provider;
+                OnPropertyChanged();
+                Console.WriteLine($"[Settings] 电商平台已更改为: {value.Provider}");
+            }
+        }
+    }
+
+    /// <summary>
     /// SearxNG 实例列表
     /// </summary>
     public ObservableCollection<InstanceInfo> Instances { get; } = new();
@@ -233,6 +255,32 @@ public partial class SettingsViewModel : PageBase
                 DisplayName = "SearxNG",
                 Description = "隐私友好的元搜索引擎，聚合多个搜索源"
             },
+        };
+
+        // 初始化电商平台供应商列表
+        AvailableECommerceProviders = new List<ECommerceProviderItem>
+        {
+            new ECommerceProviderItem
+            {
+                Provider = ECommerceProvider.PinDuoDuo,
+                DisplayName = "拼多多",
+                Description = "性价比优先，适合推荐平价商品",
+                Icon = PackIconMaterialKind.Shopping
+            },
+            new ECommerceProviderItem
+            {
+                Provider = ECommerceProvider.JingDong,
+                DisplayName = "京东",
+                Description = "品质保证，适合推荐品牌商品",
+                Icon = PackIconMaterialKind.Store
+            },
+            new ECommerceProviderItem
+            {
+                Provider = ECommerceProvider.TaoBao,
+                DisplayName = "淘宝",
+                Description = "商品丰富（暂未接入）",
+                Icon = PackIconMaterialKind.ShoppingOutline
+            }
         };
 
         // 初始化设置类别列表
@@ -485,4 +533,30 @@ public class SearchProviderItem
     /// 描述信息
     /// </summary>
     public string Description { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// 电商平台供应商项（用于UI显示）
+/// </summary>
+public class ECommerceProviderItem
+{
+    /// <summary>
+    /// 供应商枚举值
+    /// </summary>
+    public ECommerceProvider Provider { get; set; }
+
+    /// <summary>
+    /// 显示名称
+    /// </summary>
+    public string DisplayName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 描述信息
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 图标
+    /// </summary>
+    public PackIconMaterialKind Icon { get; set; } = PackIconMaterialKind.Shopping;
 }

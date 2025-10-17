@@ -53,6 +53,12 @@ public partial class AppSettingsService : ObservableObject
     private bool _enableJDPriceQuery = false; // 默认禁用
 
     /// <summary>
+    /// 电商平台供应商
+    /// </summary>
+    [ObservableProperty]
+    private ECommerceProvider _eCommerceProvider = ECommerceProvider.PinDuoDuo; // 默认使用拼多多
+
+    /// <summary>
     /// 私有构造函数（单例模式）
     /// </summary>
     private AppSettingsService()
@@ -74,7 +80,8 @@ public partial class AppSettingsService : ObservableObject
         {
             if (e.PropertyName == nameof(SearchProvider) ||
                 e.PropertyName == nameof(EnableDeepThinking) ||
-                e.PropertyName == nameof(EnableJDPriceQuery))
+                e.PropertyName == nameof(EnableJDPriceQuery) ||
+                e.PropertyName == nameof(ECommerceProvider))
             {
                 _ = SaveSettingsAsync();
             }
@@ -102,7 +109,8 @@ public partial class AppSettingsService : ObservableObject
                 SearchProvider = settings.SearchProvider;
                 EnableDeepThinking = settings.EnableDeepThinking;
                 EnableJDPriceQuery = settings.EnableJDPriceQuery;
-                Console.WriteLine($"[AppSettings] 已加载配置: SearchProvider={SearchProvider}, EnableDeepThinking={EnableDeepThinking}, EnableJDPriceQuery={EnableJDPriceQuery}");
+                ECommerceProvider = settings.ECommerceProvider;
+                Console.WriteLine($"[AppSettings] 已加载配置: SearchProvider={SearchProvider}, EnableDeepThinking={EnableDeepThinking}, EnableJDPriceQuery={EnableJDPriceQuery}, ECommerceProvider={ECommerceProvider}");
             }
         }
         catch (Exception ex)
@@ -122,7 +130,8 @@ public partial class AppSettingsService : ObservableObject
             {
                 SearchProvider = SearchProvider,
                 EnableDeepThinking = EnableDeepThinking,
-                EnableJDPriceQuery = EnableJDPriceQuery
+                EnableJDPriceQuery = EnableJDPriceQuery,
+                ECommerceProvider = ECommerceProvider
             };
 
             var options = new JsonSerializerOptions
@@ -160,4 +169,5 @@ internal class AppSettingsData
     public SearchProvider SearchProvider { get; set; } = SearchProvider.Baidu; // 默认百度
     public bool EnableDeepThinking { get; set; } = false; // 默认禁用深度思考
     public bool EnableJDPriceQuery { get; set; } = false; // 默认禁用京东价格查询
+    public ECommerceProvider ECommerceProvider { get; set; } = ECommerceProvider.PinDuoDuo; // 默认拼多多
 }

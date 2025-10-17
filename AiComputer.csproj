@@ -59,6 +59,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include=".claude\doc\PDD\PDD_Data.md" />
+    <Content Include=".claude\doc\PDD\PDD_Integration_Guide.md" />
+    <Content Include=".claude\doc\PDD\PDD_Search1.md" />
+    <Content Include=".claude\doc\PDD\PDD_Search2.md" />
+    <Content Include=".claude\doc\PDD\PDD_URL_Gen.md" />
     <Content Include=".claude\jd-guanjiancichaxun.md" />
     <Content Include=".claude\jd-tiuguang.md" />
     <Content Include=".claude\searXNGInstance.json" />

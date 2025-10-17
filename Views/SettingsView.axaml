@@ -273,49 +273,83 @@
                         </StackPanel>
                     </suki:GlassCard>
 
-                    <!-- 京东价格查询开关 -->
+                    <!-- 电商平台供应商选择 -->
                     <suki:GlassCard>
                         <StackPanel Spacing="15">
                             <!-- 设置项标题 -->
                             <StackPanel Spacing="5">
-                                <TextBlock Text="京东价格查询"
+                                <TextBlock Text="价格查询服务"
                                            FontSize="15"
                                            FontWeight="SemiBold" />
-                                <TextBlock Text="启用后将实时查询京东商品价格"
+                                <TextBlock Text="选择商品推荐和价格查询时使用的电商平台"
                                            FontSize="12"
                                            Opacity="0.7"
                                            TextWrapping="Wrap" />
                             </StackPanel>
 
-                            <!-- 开关 -->
-                            <ToggleSwitch IsChecked="{Binding EnableJDPriceQuery, Mode=TwoWay}"
-                                          OnContent="已启用"
-                                          OffContent="已禁用" />
+                            <!-- 平台选择 -->
+                            <ComboBox ItemsSource="{Binding AvailableECommerceProviders}"
+                                      SelectedItem="{Binding SelectedECommerceProviderItem, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch"
+                                      MinWidth="300">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate DataType="vm:ECommerceProviderItem">
+                                        <Grid ColumnDefinitions="Auto,*" Margin="0,5">
+                                            <!-- 图标 -->
+                                            <iconPacks:PackIconMaterial Grid.Column="0"
+                                                                        Kind="{Binding Icon}"
+                                                                        Width="20"
+                                                                        Height="20"
+                                                                        VerticalAlignment="Center"
+                                                                        Margin="0,0,10,0" />
 
-                            <!-- 警告提示 -->
+                                            <!-- 文本信息 -->
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           FontSize="13"
+                                                           FontWeight="Medium" />
+                                                <TextBlock Text="{Binding Description}"
+                                                           FontSize="11"
+                                                           Opacity="0.7"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <!-- 说明文本 -->
                             <Border Background="{DynamicResource SukiCardBackground}"
-                                    BorderBrush="#FFA500"
+                                    BorderBrush="{DynamicResource SukiBorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="6"
-                                    Padding="12"
-                                    IsVisible="{Binding !EnableJDPriceQuery}">
+                                    Padding="12">
                                 <StackPanel Spacing="8">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <iconPacks:PackIconMaterial Kind="AlertCircleOutline"
+                                        <iconPacks:PackIconMaterial Kind="InformationOutline"
                                                                     Width="16"
                                                                     Height="16"
                                                                     VerticalAlignment="Top"
                                                                     Margin="0,2,0,0"
-                                                                    Foreground="#FFA500" />
-                                        <TextBlock Text="注意"
+                                                                    Foreground="{DynamicResource SukiPrimaryColor}" />
+                                        <TextBlock Text="平台说明"
                                                    FontSize="12"
                                                    FontWeight="SemiBold"
-                                                   Foreground="#FFA500" />
+                                                   Foreground="{DynamicResource SukiPrimaryColor}" />
                                     </StackPanel>
-                                    <TextBlock Text="禁用此功能可能会导致推荐的商品价格不准确。"
-                                               FontSize="11"
-                                               Opacity="0.8"
-                                               TextWrapping="Wrap" />
+                                    <TextBlock FontSize="11" Opacity="0.8" TextWrapping="Wrap">
+                                        <Run Text="• " />
+                                        <Run Text="拼多多:" FontWeight="Bold" />
+                                        <Run Text=" 性价比高，优惠力度大，适合推荐平价商品" />
+                                        <LineBreak />
+                                        <Run Text="• " />
+                                        <Run Text="京东:" FontWeight="Bold" />
+                                        <Run Text=" 品质保证，物流快速，适合推荐品牌商品（API审核中）" />
+                                        <LineBreak />
+                                        <Run Text="• " />
+                                        <Run Text="淘宝:" FontWeight="Bold" />
+                                        <Run Text=" 商品种类丰富（暂未接入）" />
+                                    </TextBlock>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
