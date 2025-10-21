@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SukiUI.Dialogs;
@@ -12,6 +13,18 @@ public partial class MainWindowViewModel : ViewModelBase
     /// 页面列表
     /// </summary>
     public ObservableCollection<PageBase> Pages { get; }
+
+    /// <summary>
+    /// 应用程序版本号
+    /// </summary>
+    public string AppVersion
+    {
+        get
+        {
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            return version != null ? $"{version.Major}.{version.Minor}.{version.Build}" : "1.0.0";
+        }
+    }
 
     /// <summary>
     /// 当前选中的页面
