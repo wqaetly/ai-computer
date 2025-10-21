@@ -9,6 +9,7 @@ using ai_computer.Services;
 using AiComputer.Models;
 using AiComputer.Services;
 using AiComputer.Services.Tools;
+using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -134,6 +135,20 @@ public partial class AiChatViewModel : PageBase
     /// </summary>
     public AiChatViewModel() : base(LocalizationManager.Instance.GetString("Chat.Title"), PackIconMaterialKind.Chat, 0)
     {
+        // 在设计模式下跳过实际初始化，避免重复日志和耗时操作
+        if (Design.IsDesignMode)
+        {
+            // 在设计模式下，只初始化必需的字段以避免空引用
+            _archiveFilePath = string.Empty;
+            _deepSeekService = null!;
+            _searchService = null!;
+            _jdRecommendHelper = null!;
+            _pddRecommendHelper = null!;
+            _ocrService = null!;
+            _archiveService = null!;
+            return;
+        }
+
         // 初始化存档文件路径（使用应用数据目录）
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         var appFolder = System.IO.Path.Combine(appDataPath, "AiComputer");
@@ -199,6 +214,20 @@ public partial class AiChatViewModel : PageBase
     public AiChatViewModel(ISukiDialogManager dialogManager) : base(LocalizationManager.Instance.GetString("Chat.Title"), PackIconMaterialKind.Chat, 0)
     {
         _dialogManager = dialogManager;
+
+        // 在设计模式下跳过实际初始化，避免重复日志和耗时操作
+        if (Design.IsDesignMode)
+        {
+            // 在设计模式下，只初始化必需的字段以避免空引用
+            _archiveFilePath = string.Empty;
+            _deepSeekService = null!;
+            _searchService = null!;
+            _jdRecommendHelper = null!;
+            _pddRecommendHelper = null!;
+            _ocrService = null!;
+            _archiveService = null!;
+            return;
+        }
 
         // 初始化存档文件路径（使用应用数据目录）
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

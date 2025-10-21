@@ -43,10 +43,17 @@
         <!-- 侧边栏头部 -->
         <suki:SukiSideMenu.HeaderContent>
             <Image Source="/Assets/nkg_icon.png"
-                   Width="64"
-                   Height="64"
+                   Width="96"
+                   Height="96"
                    Margin="0,20,0,20"
-                   HorizontalAlignment="Center" />
+                   HorizontalAlignment="Center">
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="10"
+                                      Color="#80000000"
+                                      OffsetX="0"
+                                      OffsetY="2" />
+                </Image.Effect>
+            </Image>
         </suki:SukiSideMenu.HeaderContent>
 
         <!-- 侧边栏底部 -->
