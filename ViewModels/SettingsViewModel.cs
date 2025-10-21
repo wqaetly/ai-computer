@@ -88,6 +88,11 @@ public partial class SettingsViewModel : PageBase
     public bool IsAISelected => SelectedCategory?.Id == "ai";
 
     /// <summary>
+    /// 是否选中了语言类别
+    /// </summary>
+    public bool IsLanguageSelected => SelectedCategory?.Id == "language";
+
+    /// <summary>
     /// 所有可用的搜索服务商列表
     /// </summary>
     public List<SearchProviderItem> AvailableSearchProviders { get; }
@@ -307,6 +312,13 @@ public partial class SettingsViewModel : PageBase
             },
             new SettingCategory
             {
+                Id = "language",
+                Name = LocalizationManager.Instance.GetString("Settings.Category.Language"),
+                Icon = PackIconMaterialKind.Translate,
+                Description = LocalizationManager.Instance.GetString("Settings.Category.Language.Desc")
+            },
+            new SettingCategory
+            {
                 Id = "ai",
                 Name = LocalizationManager.Instance.GetString("Settings.Category.AI"),
                 Icon = PackIconMaterialKind.Brain,
@@ -350,6 +362,10 @@ public partial class SettingsViewModel : PageBase
                 case "appearance":
                     category.Name = LocalizationManager.Instance.GetString("Settings.Category.Appearance");
                     category.Description = LocalizationManager.Instance.GetString("Settings.Category.Appearance.Desc");
+                    break;
+                case "language":
+                    category.Name = LocalizationManager.Instance.GetString("Settings.Category.Language");
+                    category.Description = LocalizationManager.Instance.GetString("Settings.Category.Language.Desc");
                     break;
                 case "ai":
                     category.Name = LocalizationManager.Instance.GetString("Settings.Category.AI");
@@ -424,6 +440,7 @@ public partial class SettingsViewModel : PageBase
     partial void OnSelectedCategoryChanged(SettingCategory? value)
     {
         OnPropertyChanged(nameof(IsAppearanceSelected));
+        OnPropertyChanged(nameof(IsLanguageSelected));
         OnPropertyChanged(nameof(IsAISelected));
         OnPropertyChanged(nameof(IsSearchSelected));
     }

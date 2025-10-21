@@ -37,7 +37,7 @@ public class PDDRecommendToolHelper
         }
 
         var sb = new StringBuilder();
-        sb.AppendLine($"为您找到 {products.Count} 款「{keyword}」推荐商品（拼多多）：\n");
+        sb.AppendLine($"为您找到 {products.Count} 款「{keyword}」商品（拼多多）：\n");
 
         for (int i = 0; i < products.Count; i++)
         {
@@ -46,64 +46,25 @@ public class PDDRecommendToolHelper
             sb.AppendLine();
 
             // 价格信息
-            sb.AppendLine($"**{product.GetPriceLabel()}**");
+            sb.AppendLine($"**价格**: {product.GetPriceLabel()}");
             if (product.HasCoupon && product.Price > product.CouponPrice)
             {
                 sb.AppendLine($"原价: ¥{product.Price:F2}");
             }
 
-            // 商品属性
-            if (!string.IsNullOrEmpty(product.Brand))
-            {
-                sb.AppendLine($"品牌: {product.Brand}");
-            }
+            // 购买链接
+            sb.AppendLine($"**购买**: [立即购买]({product.PromotionUrl})");
 
-            if (!string.IsNullOrEmpty(product.ShopName))
-            {
-                sb.AppendLine($"店铺: {product.ShopName} ({product.GetMerchantTypeName()})");
-            }
-
-            // 销售信息
-            sb.AppendLine($"销量: {FormatNumber(product.SalesCount)}");
-
-            // 店铺评分
-            if (!string.IsNullOrEmpty(product.ServScore))
-            {
-                sb.AppendLine($"服务: {product.ServScore}");
-            }
-            if (!string.IsNullOrEmpty(product.LogisticsScore))
-            {
-                sb.AppendLine($"物流: {product.LogisticsScore}");
-            }
-            if (!string.IsNullOrEmpty(product.DescScore))
-            {
-                sb.AppendLine($"描述: {product.DescScore}");
-            }
-
-            if (product.HasCoupon)
-            {
-                sb.AppendLine("✅ 有优惠券");
-            }
-
-            // 佣金信息（可选：是否显示给用户）
-            sb.AppendLine($"预估佣金: ¥{product.Commission:F2} ({product.CommissionRate:F1}%)");
-
-            // 购买链接（使用特殊标记，便于UI识别和渲染）
-            sb.AppendLine($"\n📦 [立即购买]({product.PromotionUrl})");
-            sb.AppendLine($"🔗 推广链接: {product.PromotionUrl}");
-
-            // 图片URL（使用特殊标记）
+            // 图片URL（重要：供AI生成表格使用）
             if (!string.IsNullOrEmpty(product.ImageUrl))
             {
-                sb.AppendLine($"🖼️ 图片: {product.ImageUrl}");
+                sb.AppendLine($"**图片**: {product.ImageUrl}");
             }
 
             sb.AppendLine();
             sb.AppendLine("---");
             sb.AppendLine();
         }
-
-        sb.AppendLine("💡 **购物提示**：点击\"立即购买\"即可跳转拼多多购买，支持联盟返佣。");
 
         return sb.ToString();
     }

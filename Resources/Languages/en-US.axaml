@@ -144,6 +144,8 @@
     <sys:String x:Key="Settings.Category.AI.Desc">Configure AI features and services</sys:String>
     <sys:String x:Key="Settings.Category.Search">Web Search</sys:String>
     <sys:String x:Key="Settings.Category.Search.Desc">Configure search service for AI chat</sys:String>
+    <sys:String x:Key="Settings.Category.Language">Language</sys:String>
+    <sys:String x:Key="Settings.Category.Language.Desc">Choose the display language for the application</sys:String>
 
     <!-- Search Providers -->
     <sys:String x:Key="Settings.SearchProvider.Baidu">Baidu</sys:String>

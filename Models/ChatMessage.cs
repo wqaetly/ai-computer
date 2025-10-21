@@ -146,7 +146,7 @@ public partial class ChatMessage : ObservableObject
     /// 搜索结果是否展开
     /// </summary>
     [ObservableProperty]
-    private bool _isSearchResultExpanded = true;
+    private bool _isSearchResultExpanded = false;
 
     /// <summary>
     /// AI 消息状态
@@ -196,7 +196,8 @@ public partial class ChatMessage : ObservableObject
                     return ToolName switch
                     {
                         "web_search" => "联网搜索中...",
-                        "recommend_jd_product" => "正在推荐商品...",
+                        "recommend_product" => "正在查询价格...",
+                        "recommend_jd_product" => "正在查询价格...",
                         _ => "工具执行中..."
                     };
                 }
@@ -205,7 +206,8 @@ public partial class ChatMessage : ObservableObject
                     return ToolName switch
                     {
                         "web_search" => "联网搜索完毕",
-                        "recommend_jd_product" => "商品推荐完毕",
+                        "recommend_product" => "价格查询完毕",
+                        "recommend_jd_product" => "价格查询完毕",
                         _ => "工具执行完毕"
                     };
                 }

@@ -248,9 +248,12 @@
                             </ItemsControl>
                         </StackPanel>
                     </suki:GlassCard>
+                </StackPanel>
 
+                <!-- 语言设置（仅当选中"语言"类别时显示） -->
+                <StackPanel Spacing="20" IsVisible="{Binding IsLanguageSelected}">
                     <!-- 语言选择 -->
-                    <suki:GlassCard IsVisible="{Binding IsAppearanceSelected}">
+                    <suki:GlassCard>
                         <StackPanel Spacing="15">
                             <!-- 设置项标题 -->
                             <StackPanel Spacing="5">

@@ -30,7 +30,23 @@ public partial class AiChatViewModel : PageBase
     private readonly JDRecommendToolHelper _jdRecommendHelper;
     private readonly PDDRecommendToolHelper _pddRecommendHelper;
     private readonly OcrService _ocrService;
+    private readonly ChatArchiveService _archiveService;
     private CancellationTokenSource? _cancellationTokenSource;
+
+    /// <summary>
+    /// 存档文件路径
+    /// </summary>
+    private readonly string _archiveFilePath;
+
+    /// <summary>
+    /// 自动保存的防抖定时器
+    /// </summary>
+    private System.Timers.Timer? _autoSaveTimer;
+
+    /// <summary>
+    /// 是否正在加载存档（防止加载时触发自动保存）
+    /// </summary>
+    private bool _isLoadingArchive = false;
 
     /// <summary>
     /// 对话框管理器
@@ -118,6 +134,15 @@ public partial class AiChatViewModel : PageBase
     /// </summary>
     public AiChatViewModel() : base(LocalizationManager.Instance.GetString("Chat.Title"), PackIconMaterialKind.Chat, 0)
     {
+        // 初始化存档文件路径（使用应用数据目录）
+        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var appFolder = System.IO.Path.Combine(appDataPath, "AiComputer");
+        if (!System.IO.Directory.Exists(appFolder))
+        {
+            System.IO.Directory.CreateDirectory(appFolder);
+        }
+        _archiveFilePath = System.IO.Path.Combine(appFolder, "chat_sessions.json");
+
         // 使用提供的 API Key
         _deepSeekService = new DeepSeekService("sk-e8ec7e0c860d4b7d98ffc4212ab2c138");
 
@@ -140,14 +165,31 @@ public partial class AiChatViewModel : PageBase
         // 异步初始化OCR服务（不阻塞构造函数）
         _ = _ocrService.InitializeAsync();
 
+        // 初始化存档服务
+        _archiveService = new ChatArchiveService();
+
+        // 初始化自动保存定时器（2秒防抖）
+        _autoSaveTimer = new System.Timers.Timer(2000);
+        _autoSaveTimer.AutoReset = false;
+        _autoSaveTimer.Elapsed += async (_, _) => await AutoSaveAsync();
+
         // 注册工具
         RegisterTools();
 
         // 监听语言变化事件
         LocalizationManager.Instance.LanguageChanged += OnLanguageChanged;
 
-        // 创建第一个默认会话
-        CreateNewSession();
+        // 监听会话集合变化
+        Sessions.CollectionChanged += (_, _) =>
+        {
+            if (!_isLoadingArchive)
+            {
+                TriggerAutoSave();
+            }
+        };
+
+        // 自动加载存档或创建默认会话
+        _ = InitializeSessionsAsync();
     }
 
     /// <summary>
@@ -158,6 +200,15 @@ public partial class AiChatViewModel : PageBase
     {
         _dialogManager = dialogManager;
 
+        // 初始化存档文件路径（使用应用数据目录）
+        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var appFolder = System.IO.Path.Combine(appDataPath, "AiComputer");
+        if (!System.IO.Directory.Exists(appFolder))
+        {
+            System.IO.Directory.CreateDirectory(appFolder);
+        }
+        _archiveFilePath = System.IO.Path.Combine(appFolder, "chat_sessions.json");
+
         // 使用提供的 API Key
         _deepSeekService = new DeepSeekService("sk-e8ec7e0c860d4b7d98ffc4212ab2c138");
 
@@ -180,14 +231,31 @@ public partial class AiChatViewModel : PageBase
         // 异步初始化OCR服务（不阻塞构造函数）
         _ = _ocrService.InitializeAsync();
 
+        // 初始化存档服务
+        _archiveService = new ChatArchiveService();
+
+        // 初始化自动保存定时器（2秒防抖）
+        _autoSaveTimer = new System.Timers.Timer(2000);
+        _autoSaveTimer.AutoReset = false;
+        _autoSaveTimer.Elapsed += async (_, _) => await AutoSaveAsync();
+
         // 注册工具
         RegisterTools();
 
         // 监听语言变化事件
         LocalizationManager.Instance.LanguageChanged += OnLanguageChanged;
 
-        // 创建第一个默认会话
-        CreateNewSession();
+        // 监听会话集合变化
+        Sessions.CollectionChanged += (_, _) =>
+        {
+            if (!_isLoadingArchive)
+            {
+                TriggerAutoSave();
+            }
+        };
+
+        // 自动加载存档或创建默认会话
+        _ = InitializeSessionsAsync();
     }
 
     /// <summary>
@@ -362,6 +430,111 @@ public partial class AiChatViewModel : PageBase
     }
 
     /// <summary>
+    /// 初始化会话列表（自动加载存档或创建默认会话）
+    /// </summary>
+    private async Task InitializeSessionsAsync()
+    {
+        try
+        {
+            _isLoadingArchive = true;
+
+            // 尝试加载存档
+            if (System.IO.File.Exists(_archiveFilePath))
+            {
+                var loadedSessions = await _archiveService.LoadFromFileAsync(_archiveFilePath);
+                Console.WriteLine($"[ChatArchive] 自动加载了 {loadedSessions.Count} 个会话");
+
+                foreach (var session in loadedSessions)
+                {
+                    Sessions.Add(session);
+                    SetupSessionMessageListener(session);
+                }
+
+                // 选择第一个会话
+                if (Sessions.Count > 0)
+                {
+                    CurrentSession = Sessions[0];
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ChatArchive] 自动加载失败: {ex.Message}");
+        }
+        finally
+        {
+            _isLoadingArchive = false;
+        }
+
+        // 如果没有加载到任何会话，创建默认会话
+        if (Sessions.Count == 0)
+        {
+            CreateNewSession();
+        }
+    }
+
+    /// <summary>
+    /// 为会话设置消息监听器（用于自动保存）
+    /// </summary>
+    private void SetupSessionMessageListener(ChatSession session)
+    {
+        session.Messages.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(ShowWelcomeScreen));
+            if (!_isLoadingArchive)
+            {
+                TriggerAutoSave();
+            }
+        };
+    }
+
+    /// <summary>
+    /// 触发自动保存（使用防抖定时器）
+    /// </summary>
+    private void TriggerAutoSave()
+    {
+        // 重置定时器（防抖）
+        _autoSaveTimer?.Stop();
+        _autoSaveTimer?.Start();
+    }
+
+    /// <summary>
+    /// 执行自动保存
+    /// </summary>
+    private async Task AutoSaveAsync()
+    {
+        try
+        {
+            await _archiveService.SaveToFileAsync(Sessions, _archiveFilePath);
+            Console.WriteLine($"[ChatArchive] 自动保存成功 ({Sessions.Count} 个会话)");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ChatArchive] 自动保存失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 应用退出时保存（供MainWindow调用）
+    /// </summary>
+    public async Task SaveOnExitAsync()
+    {
+        try
+        {
+            // 停止定时器，避免重复保存
+            _autoSaveTimer?.Stop();
+
+            // 执行最终保存
+            await _archiveService.SaveToFileAsync(Sessions, _archiveFilePath);
+            Console.WriteLine($"[ChatArchive] 退出时保存成功 ({Sessions.Count} 个会话)");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ChatArchive] 退出时保存失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// 创建新会话
     /// </summary>
     [RelayCommand]
@@ -374,10 +547,7 @@ public partial class AiChatViewModel : PageBase
         CurrentSession = newSession;
 
         // 监听新会话的消息变化
-        newSession.Messages.CollectionChanged += (_, _) =>
-        {
-            OnPropertyChanged(nameof(ShowWelcomeScreen));
-        };
+        SetupSessionMessageListener(newSession);
     }
 
     /// <summary>
@@ -436,6 +606,9 @@ public partial class AiChatViewModel : PageBase
         {
             session.Title = LocalizationManager.Instance.GetString("Chat.NewSessionName");
         }
+
+        // 触发自动保存
+        TriggerAutoSave();
     }
 
     /// <summary>
@@ -638,8 +811,8 @@ public partial class AiChatViewModel : PageBase
                             {
                                 var keyword = argsRoot.GetProperty("keyword").GetString() ?? "";
                                 var count = argsRoot.TryGetProperty("count", out var countProp) ? countProp.GetInt32() : 3;
-                                displayText = $"正在推荐商品: {keyword} (数量: {count})";
-                                icon = "🛒";
+                                displayText = $"正在查询价格: {keyword}";
+                                icon = "💰";
                                 Console.WriteLine($"[UI] Tool called: recommend_product, keyword: {keyword}, count: {count}");
                             }
                             else
@@ -706,8 +879,9 @@ public partial class AiChatViewModel : PageBase
                                     string formattedResults;
                                     if (toolName == "recommend_product")
                                     {
-                                        // 商品推荐结果已经格式化好，直接使用
-                                        formattedResults = ExtractToolResult(toolResults);
+                                        // 商品推荐结果：提取完整内容后简化显示（只显示商品名和价格）
+                                        var fullResults = ExtractToolResult(toolResults);
+                                        formattedResults = SimplifyProductResults(fullResults);
                                         Console.WriteLine($"[UI] Product recommendation completed");
                                     }
                                     else if (toolName == "web_search")
@@ -781,6 +955,9 @@ public partial class AiChatViewModel : PageBase
             IsSending = false;
             _cancellationTokenSource?.Dispose();
             _cancellationTokenSource = null;
+
+            // AI输出完成后触发自动保存，确保所有内容都被保存
+            TriggerAutoSave();
         }
     }
 
@@ -919,6 +1096,65 @@ public partial class AiChatViewModel : PageBase
                 });
             });
         }, Avalonia.Threading.DispatcherPriority.Background);
+    }
+
+    /// <summary>
+    /// 简化商品推荐结果（只显示商品名和价格）
+    /// </summary>
+    private string SimplifyProductResults(string fullResults)
+    {
+        var lines = fullResults.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var simplified = new System.Text.StringBuilder();
+
+        string? currentProductName = null;
+        string? currentPrice = null;
+        int productIndex = 0;
+
+        foreach (var line in lines)
+        {
+            var trimmedLine = line.Trim();
+
+            // 提取商品名（从标题行）
+            if (trimmedLine.StartsWith("### 商品"))
+            {
+                // 格式：### 商品 1: 商品名称
+                var colonIndex = trimmedLine.IndexOf(':');
+                if (colonIndex > 0 && colonIndex < trimmedLine.Length - 1)
+                {
+                    currentProductName = trimmedLine.Substring(colonIndex + 1).Trim();
+                }
+            }
+            // 提取价格
+            else if (trimmedLine.StartsWith("**价格**:"))
+            {
+                // 格式：**价格**: 券后价: ¥12999.00
+                var colonIndex = trimmedLine.IndexOf(':');
+                if (colonIndex > 0 && colonIndex < trimmedLine.Length - 1)
+                {
+                    currentPrice = trimmedLine.Substring(colonIndex + 1).Trim();
+                }
+            }
+            // 遇到分隔线，说明一个商品信息结束
+            else if (trimmedLine == "---")
+            {
+                if (!string.IsNullOrEmpty(currentProductName) && !string.IsNullOrEmpty(currentPrice))
+                {
+                    productIndex++;
+                    simplified.AppendLine($"{productIndex}. **{currentProductName}** - {currentPrice}");
+                }
+                currentProductName = null;
+                currentPrice = null;
+            }
+        }
+
+        // 处理最后一个商品（如果没有分隔线）
+        if (!string.IsNullOrEmpty(currentProductName) && !string.IsNullOrEmpty(currentPrice))
+        {
+            productIndex++;
+            simplified.AppendLine($"{productIndex}. **{currentProductName}** - {currentPrice}");
+        }
+
+        return simplified.ToString();
     }
 
     /// <summary>

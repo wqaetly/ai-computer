@@ -144,6 +144,8 @@
     <sys:String x:Key="Settings.Category.AI.Desc">配置AI相关功能和服务</sys:String>
     <sys:String x:Key="Settings.Category.Search">联网搜索</sys:String>
     <sys:String x:Key="Settings.Category.Search.Desc">配置AI对话时使用的搜索服务</sys:String>
+    <sys:String x:Key="Settings.Category.Language">语言</sys:String>
+    <sys:String x:Key="Settings.Category.Language.Desc">选择应用程序的显示语言</sys:String>
 
     <!-- 搜索提供商 -->
     <sys:String x:Key="Settings.SearchProvider.Baidu">百度</sys:String>
