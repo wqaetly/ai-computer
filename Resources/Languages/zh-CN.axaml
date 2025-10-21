@@ -3,7 +3,8 @@
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
     <!-- 通用 -->
-    <sys:String x:Key="App.Title">AI Computer - DeepSeek 智能助手</sys:String>
+    <sys:String x:Key="App.Title">PC 装机助手</sys:String>
+    <sys:String x:Key="App.Version">版本</sys:String>
     <sys:String x:Key="Common.Cancel">取消</sys:String>
     <sys:String x:Key="Common.Confirm">确认</sys:String>
     <sys:String x:Key="Common.Save">保存</sys:String>
@@ -17,7 +18,7 @@
     <sys:String x:Key="MainWindow.ClearChat">清空对话</sys:String>
 
     <!-- AI 聊天界面 -->
-    <sys:String x:Key="Chat.Title">AI装机大王</sys:String>
+    <sys:String x:Key="Chat.Title">PC 装机助手</sys:String>
     <sys:String x:Key="Chat.Subtitle">专业电脑硬件配置分析与装机方案推荐</sys:String>
     <sys:String x:Key="Chat.InputPlaceholder">输入您的硬件配置或装机需求... (支持拖拽图片进行文字识别，或点击+选择图片，Ctrl+Enter 发送)</sys:String>
     <sys:String x:Key="Chat.DragImageHere">拖拽图片到此处</sys:String>

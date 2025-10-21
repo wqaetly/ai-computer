@@ -9,7 +9,7 @@
                  x:Class="AiComputer.Views.MainWindow"
                  x:DataType="vm:MainWindowViewModel"
                  Icon="/Assets/nkg_icon.png"
-                 Title="AI Computer - DeepSeek 智能助手"
+                 Title="PC 装机助手"
                  Width="1200" Height="800"
                  BackgroundStyle="Gradient"
                  IsMenuVisible="False">
@@ -51,11 +51,17 @@
 
         <!-- 侧边栏底部 -->
         <suki:SukiSideMenu.FooterContent>
-            <TextBlock Text="🤖"
-                       FontSize="20"
-                       Margin="0,0,0,15"
-                       HorizontalAlignment="Center"
-                       Opacity="0.5" />
+            <StackPanel HorizontalAlignment="Center"
+                        Margin="0,0,0,15"
+                        Spacing="2">
+                <TextBlock HorizontalAlignment="Center"
+                           FontSize="10"
+                           Opacity="0.5">
+                    <Run Text="{DynamicResource App.Version}" />
+                    <Run Text=" " />
+                    <Run Text="{Binding AppVersion}" />
+                </TextBlock>
+            </StackPanel>
         </suki:SukiSideMenu.FooterContent>
     </suki:SukiSideMenu>
 

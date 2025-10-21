@@ -30,10 +30,12 @@
 
                 <!-- 对话列表头部 -->
                 <Border Grid.Row="0"
-                        Background="{DynamicResource SukiCardBackground}"
                         BorderBrush="{DynamicResource SukiBorderBrush}"
                         BorderThickness="0,0,0,1"
                         Padding="12,10">
+                    <Border.Background>
+                        <SolidColorBrush Color="{DynamicResource SukiPrimaryColor}" Opacity="0.15"/>
+                    </Border.Background>
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBlock Grid.Column="0"
                                    Text="{DynamicResource Chat.SessionList}"
