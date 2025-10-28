@@ -9,7 +9,7 @@
                  x:Class="AiComputer.Views.MainWindow"
                  x:DataType="vm:MainWindowViewModel"
                  Icon="/Assets/nkg_icon.png"
-                 Title="PC 装机助手"
+                 Title="NKG百宝箱"
                  Width="1200" Height="800"
                  BackgroundStyle="Gradient"
                  IsMenuVisible="False">

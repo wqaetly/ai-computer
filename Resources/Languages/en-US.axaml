@@ -3,7 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
     <!-- Common -->
-    <sys:String x:Key="App.Title">PC Genius - Smart Build Assistant</sys:String>
+    <sys:String x:Key="App.Title">NKG Toolbox</sys:String>
     <sys:String x:Key="App.Version">Version</sys:String>
     <sys:String x:Key="Common.Cancel">Cancel</sys:String>
     <sys:String x:Key="Common.Confirm">Confirm</sys:String>

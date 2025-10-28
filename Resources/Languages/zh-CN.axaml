@@ -3,7 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
     <!-- 通用 -->
-    <sys:String x:Key="App.Title">PC 装机助手</sys:String>
+    <sys:String x:Key="App.Title">NKG百宝箱</sys:String>
     <sys:String x:Key="App.Version">版本</sys:String>
     <sys:String x:Key="Common.Cancel">取消</sys:String>
     <sys:String x:Key="Common.Confirm">确认</sys:String>
