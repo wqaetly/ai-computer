@@ -10,15 +10,14 @@ set RUNTIME=win-x64
 set CONFIGURATION=Release
 set OUTPUT_DIR=publish\%RUNTIME%
 
-echo [提示] 此版本为框架依赖模式
-echo        用户需要安装 .NET 9 运行时
-echo        下载地址: https://dotnet.microsoft.com/download/dotnet/9.0
+echo [提示] 此版本为自包含模式
+echo        无需用户安装 .NET 9 运行时，开箱即用
 echo.
 
 echo [1/3] 清理旧的发布文件...
 if exist publish rmdir /s /q publish
 
-echo [2/3] 开始发布（框架依赖，体积最小）...
+echo [2/3] 开始发布（自包含 + 代码裁剪）...
 echo 目标运行时: %RUNTIME%
 echo 配置: %CONFIGURATION%
 echo.
@@ -39,16 +38,16 @@ echo.
 
 :: 显示输出文件大小统计
 echo 文件大小统计:
-for %%F in ("%OUTPUT_DIR%\AiComputer.exe") do echo   主程序: %%~zF 字节 (%%~nF.exe)
-for %%F in ("%OUTPUT_DIR%\AiComputer.dll") do echo   主库: %%~zF 字节 (%%~nF.dll)
+for %%F in ("%OUTPUT_DIR%\AiComputer.exe") do echo   主程序: %%~zF 字节
+for %%F in ("%OUTPUT_DIR%\AiComputer.dll") do echo   主库: %%~zF 字节
 
 echo.
 echo ========================================
 echo   发布成功！
 echo.
 echo   发布目录: %CD%\%OUTPUT_DIR%
-echo   发布模式: 框架依赖 (需要 .NET 9)
-echo   优化: 已移除大文件嵌入，体积减少 40%%
+echo   发布模式: 自包含（无需安装 .NET 9）
+echo   优化: 代码裁剪 + 移除大文件嵌入
 echo ========================================
 echo.
 
