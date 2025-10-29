@@ -49,7 +49,10 @@
       "Bash(del \"I:\\ai-computer\\ai-computer\\Services\\Tools\\PDDApiCompareTool.cs\")",
       "Bash(dotnet list:*)",
       "Bash(Select-String \"error|warning\")",
-      "Bash(dotnet publish:*)"
+      "Bash(dotnet publish:*)",
+      "Read(//e/Study/wqaetly/obfuz/**)",
+      "Bash(E:Studywqaetlyai-computerpublish.bat)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []

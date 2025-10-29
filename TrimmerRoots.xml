@@ -1,0 +1,42 @@
+<linker>
+  <!-- 保护 Avalonia 核心程序集，避免裁剪导致运行时错误 -->
+  <assembly fullname="Avalonia.Base" preserve="all" />
+  <assembly fullname="Avalonia.Controls" preserve="all" />
+  <assembly fullname="Avalonia.Markup.Xaml" preserve="all" />
+  <assembly fullname="Avalonia.Styling" preserve="all" />
+  <assembly fullname="Avalonia.Themes.Fluent" preserve="all" />
+  <assembly fullname="Avalonia.DesktopRuntime" preserve="all" />
+
+  <!-- 保护 SukiUI 主题库 -->
+  <assembly fullname="SukiUI" preserve="all" />
+  <assembly fullname="SukiUI.Dock" preserve="all" />
+
+  <!-- 保护 MVVM 工具包生成的代码 -->
+  <assembly fullname="CommunityToolkit.Mvvm" preserve="all" />
+
+  <!-- 保护 ViewModels 和 Views（使用反射加载） -->
+  <assembly fullname="AiComputer">
+    <type fullname="AiComputer.ViewModels.*" preserve="all" />
+    <type fullname="AiComputer.Views.*" preserve="all" />
+    <type fullname="AiComputer.Models.*" preserve="all" />
+  </assembly>
+
+  <!-- 保护 Emgu.CV（使用非托管代码） -->
+  <assembly fullname="Emgu.CV" preserve="all" />
+  <assembly fullname="Emgu.CV.Platform.NetStandard" preserve="all" />
+
+  <!-- 保护 ONNX Runtime（使用非托管代码） -->
+  <assembly fullname="Microsoft.ML.OnnxRuntime" preserve="all" />
+
+  <!-- 保护 PuppeteerSharp（动态加载浏览器） -->
+  <assembly fullname="PuppeteerSharp" preserve="all" />
+
+  <!-- 保护图标库 -->
+  <assembly fullname="IconPacks.Avalonia" preserve="all" />
+
+  <!-- 保护 Markdown 渲染库 -->
+  <assembly fullname="LiveMarkdown.Avalonia" preserve="all" />
+
+  <!-- 保护 YAML 解析库 -->
+  <assembly fullname="YamlDotNet" preserve="all" />
+</linker>
