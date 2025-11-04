@@ -14,22 +14,16 @@
     <FileVersion>1.0.0</FileVersion>
   </PropertyGroup>
 
-  <!-- 发布配置：自包含模式 + 优化体积 -->
+  <!-- 发布配置：自包含模式 -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <!-- 自包含模式：无需用户安装 .NET 9 -->
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <!-- 启用代码裁剪以减小体积 -->
-    <PublishTrimmed>true</PublishTrimmed>
-    <!-- 使用部分裁剪模式（更安全） -->
-    <TrimMode>partial</TrimMode>
     <!-- 不包含 PDB 调试文件 -->
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <!-- 优化程序集 -->
     <OptimizationPreference>Speed</OptimizationPreference>
-    <!-- 禁用裁剪警告汇总 -->
-    <TrimmerSingleWarn>false</TrimmerSingleWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,11 +31,6 @@
     <!-- 排除大文件（Chrome、OCR 模型） -->
     <AvaloniaResource Include="Assets\**"
                       Exclude="Assets\chrome-win64\**;Assets\OCRModels\**" />
-  </ItemGroup>
-
-  <!-- 裁剪器配置文件：指定哪些程序集不被裁剪 -->
-  <ItemGroup>
-    <TrimmerRootDescriptor Include="TrimmerRoots.xml" />
   </ItemGroup>
 
   <ItemGroup>
